@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PatioFix.Broker": {
+      "commandName": "Project",
+      "commandLineArgs": "-gui"
+    }
+  }
+}

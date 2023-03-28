@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PatioFIX.Admin": {
+      "commandName": "Project",
+      "commandLineArgs": "-gui"
+    }
+  }
+}
