@@ -1,7 +1,7 @@
 ﻿using PatioFIX.Common.FixSupport;
 using System;
 
-namespace PatioFIX.Common.BLL.Messages
+namespace PatioFIX.Common.BLL.MessagesIn
 {
     /// <summary>
     /// <Parties> Component Block
@@ -57,30 +57,30 @@ namespace PatioFIX.Common.BLL.Messages
         public PartyComponent(int role)
         {
             Reset();
-            this.PartyRole = role;
+            PartyRole = role;
         }
 
         /// <summary>
-        /// Διαγραφει ολες τις τιμες του Component εκτος απο το PartyRole
+        /// Διαγραφει ολες τις τιμες του Component εκτος απο το PartyRole!
         /// </summary>
         public void EmptyValues()
         {
-            this.PartyID = String.Empty;
-            this.PartyIDSource = default(char);
-            //this.PartyRole
-            this.PartyRoleQualifier = default(int);
-            this.m_isset = false;
+            PartyID = string.Empty;
+            PartyIDSource = default;
+            //To PartyRole δεν το πειραζουμε σε αυτη την περιπτωση
+            PartyRoleQualifier = default;
+            m_isset = false;
         }
         /// <summary>
         /// Διαγραφει ολες τις τιμες του Component
         /// </summary>
         public void Reset()
         {
-            this.PartyID = String.Empty;
-            this.PartyIDSource = default(char);
-            this.PartyRole = default(int);
-            this.PartyRoleQualifier = default(int);
-            this.m_isset = false;
+            PartyID = string.Empty;
+            PartyIDSource = default;
+            PartyRole = default;
+            PartyRoleQualifier = default;
+            m_isset = false;
         }
 
         /// <summary>
@@ -92,27 +92,27 @@ namespace PatioFIX.Common.BLL.Messages
         /// <param name="validateDuplicatePartyRole"></param>
         public void Set(FIXMessage message, PartyComponent source, Logger logger, bool validateDuplicatePartyRole)
         {
-            if (this.PartyRole == source.PartyRole)
+            if (PartyRole == source.PartyRole)
             {
-                if (this.IsSet)
+                if (IsSet)
                 {
                     if (validateDuplicatePartyRole)
                     {
                         MetricsProxy.Instance.OnParsingWarning();
-                        logger.Warning($"<Parties> Component Block:: PartyRole (452={this.PartyRole}) DUPLICATE, {message}");
+                        logger.Warning($"<Parties> Component Block:: PartyRole (452={PartyRole}) DUPLICATE, {message}");
                     }
                     return;
                 }
 
                 //this.PartyRole = source.PartyRole;
-                this.PartyIDSource = source.PartyIDSource;
-                this.PartyID = source.PartyID;
-                this.PartyRoleQualifier = source.PartyRoleQualifier;
-                this.m_isset = true;
+                PartyIDSource = source.PartyIDSource;
+                PartyID = source.PartyID;
+                PartyRoleQualifier = source.PartyRoleQualifier;
+                m_isset = true;
             }
             else
             {
-                throw new Exception($"<Parties> Component Block:: PartyRole (452={this.PartyRole}) WRONG_SETUP!");
+                throw new Exception($"<Parties> Component Block:: PartyRole (452={PartyRole}) WRONG_SETUP!");
             }
         }
 
@@ -125,19 +125,19 @@ namespace PatioFIX.Common.BLL.Messages
         {
             if (_field.Tag == Tags.PartyRole)
             {
-                this.PartyRole = _field.AsInt;
+                PartyRole = _field.AsInt;
             }
             else if (_field.Tag == Tags.PartyIDSource)
             {
-                this.PartyIDSource = _field.AsChar;
+                PartyIDSource = _field.AsChar;
             }
             else if (_field.Tag == Tags.PartyID)
             {
-                this.PartyID = _field.AsString;
+                PartyID = _field.AsString;
             }
             else if (_field.Tag == CustomTags.PartyRoleQualifier)
             {
-                this.PartyRoleQualifier = _field.AsInt;
+                PartyRoleQualifier = _field.AsInt;
             }
         }
 
@@ -150,22 +150,22 @@ namespace PatioFIX.Common.BLL.Messages
         {
             if (tag == Tags.PartyID)
             {
-                if (this.PartyID != String.Empty)
+                if (PartyID != string.Empty)
                     return true;
             }
             else if (tag == Tags.PartyIDSource)
             {
-                if (this.PartyIDSource != default(char))
+                if (PartyIDSource != default(char))
                     return true;
             }
             else if (tag == Tags.PartyRole)
             {
-                if (this.PartyRole != default(int))
+                if (PartyRole != default)
                     return true;
             }
             else if (tag == CustomTags.PartyRoleQualifier)
             {
-                if (this.PartyRoleQualifier != default(int))
+                if (PartyRoleQualifier != default)
                     return true;
             }
 
@@ -188,6 +188,28 @@ namespace PatioFIX.Common.BLL.Messages
             return false;
         }
 
+        public override string ToString()
+        {
+            if (PartyRole == 1)
+                return $"Executing Firm = '{PartyID}'";
+            if (PartyRole == 3)
+                return $"Client ID = '{PartyID}'";
+            if (PartyRole == 4)
+                return $"Clearing Firm = '{PartyID}'";
+            if (PartyRole == 12)
+                return $"Executing Trader = '{PartyID}'";
+            if (PartyRole == 17)
+                return $"Contra Firm = '{PartyID}'";
+            if (PartyRole == 26)
+                return $"Correspondent Trader = '{PartyID}'";
+            if (PartyRole == 36)
+                return $"Entering Trader = '{PartyID}'";
+            if (PartyRole == 37)
+                return $"Contra Trader = '{PartyID}'";
+            if (PartyRole == 122)
+                return $"Investment Decision Maker = '{PartyID}'";
 
+            return $"Role={PartyRole}, PartyID={PartyID}";
+        }
     }
 }

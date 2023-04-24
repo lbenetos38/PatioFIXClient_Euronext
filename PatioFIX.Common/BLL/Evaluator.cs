@@ -43,7 +43,7 @@ namespace PatioFIX.Common
             m_evaluators[(int)ODLMessageTypeEnum.Order_Change_Confirmation] = new OrderChangeConfirmationEvaluator(this.OdlDal);
             m_evaluators[(int)ODLMessageTypeEnum.New_Trade_Confirmation] = new NewTradeConfirmationEvaluator(this.OdlDal);
             //m_evaluators[(int)ODLMessageType.Quote_Mass_Cancel] = new QuoteMassCancelEvaluator(this.OdlDal);
-            //m_evaluators[(int)ODLMessageType.Reserved1] = new Reserved1Evaluator(this.OdlDal);
+            m_evaluators[(int)ODLMessageTypeEnum.Trade_Capture_Report] = new TradeCaptureReportEvaluator(this.OdlDal);
             m_evaluators[(int)ODLMessageTypeEnum.Rejection] = new RejectionEvaluator(this.OdlDal);
             m_evaluators[(int)ODLMessageTypeEnum.OrderCancelReject] = new OrderCancelRejectEvaluator(this.OdlDal);
             m_evaluators[(int)ODLMessageTypeEnum.Credit_Limit_Information] = new CreditLimitInformationEvaluator(this.OdlDal);
@@ -180,7 +180,7 @@ namespace PatioFIX.Common
 
                    type == ODLMessageTypeEnum.Trade_Report_Entry || type == ODLMessageTypeEnum.Order_Mass_Cancel ||
                    type == ODLMessageTypeEnum.Hit_n_Take_Order_Entry || type == ODLMessageTypeEnum.Order_Mass_Cancel_Confirmation ||
-                   type == ODLMessageTypeEnum.Reserved1 || type == ODLMessageTypeEnum.Reserved2 || type == ODLMessageTypeEnum.Reserved3 ||
+                   type == ODLMessageTypeEnum.Reserved2 || type == ODLMessageTypeEnum.Reserved3 ||
                    type == ODLMessageTypeEnum.DSS_Entry || type == ODLMessageTypeEnum.DSS_Entry_Confirmation ||
                    type == ODLMessageTypeEnum.DSS_Trade || type == ODLMessageTypeEnum.DSS_Broadcast ||
                    type == ODLMessageTypeEnum.Quote_Entry_Change || type == ODLMessageTypeEnum.Quote_Cancel ||
@@ -215,6 +215,9 @@ namespace PatioFIX.Common
                     return true;
 
                 if (type == ODLMessageTypeEnum.New_Trade_Confirmation)
+                    return true;
+
+                if (type == ODLMessageTypeEnum.Trade_Capture_Report)
                     return true;
             }
             #endregion

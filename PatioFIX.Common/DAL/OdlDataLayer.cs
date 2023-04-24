@@ -536,7 +536,7 @@ namespace PatioFIX.Common.DAL
                 command.Connection.Close();
             }
         }
-        public void InsertTrades(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation)
+        public void InsertTrade(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation)
         {
             if (newTradeConfirmation == null) throw new ArgumentNullException(nameof(newTradeConfirmation));
 
@@ -626,6 +626,79 @@ namespace PatioFIX.Common.DAL
             }
         }
 
+        public void InsertTradeCaptureReport(FIXInMessage message, TradeCaptureReportMessage tradeCaptureReport)
+        {
+            if (tradeCaptureReport == null) throw new ArgumentNullException(nameof(tradeCaptureReport));
+
+            var command = CreateCommandForProc("dbo.fxodl_tradecapturereports_Create");
+
+            AddParameter(command, "@TrdMatchID", tradeCaptureReport.TrdMatchID, SqlDbType.Char, ParameterDirection.Input, 6);//TradeNumber
+            AddParameter(command, "@TradeReportID", tradeCaptureReport.TradeReportID, SqlDbType.Char, ParameterDirection.Input, 16);//ClientOrderID
+            AddParameter(command, "@TradeReportRefID", tradeCaptureReport.TradeReportRefID, SqlDbType.Char, ParameterDirection.Input, 16);//OrigClientOrderID
+
+            AddParameter(command, "@MatchStatus", (int)tradeCaptureReport.MatchStatus, SqlDbType.Int);
+            AddParameter(command, "@TradeReportType", (int)tradeCaptureReport.TradeReportType, SqlDbType.Int);
+            AddParameter(command, "@TradeReportTransType", (int)tradeCaptureReport.TradeReportTransType, SqlDbType.Int);
+            AddParameter(command, "@PreviouslyReported", tradeCaptureReport.PreviouslyReported, SqlDbType.Char, ParameterDirection.Input, 1);
+
+            AddParameter(command, "@BoardID", tradeCaptureReport.BoardID, SqlDbType.Char, ParameterDirection.Input, 1);//BoardID
+
+            AddParameter(command, "@SecurityID", _trim(tradeCaptureReport.SecurityID), SqlDbType.NVarChar, ParameterDirection.Input, 20);//SecurityID
+            AddParameter(command, "@SecurityIDSource", tradeCaptureReport.SecurityIDSource, SqlDbType.Char, ParameterDirection.Input, 1);//SecurityIDSource
+            AddParameter(command, "@VenueId", _trim(tradeCaptureReport.SecurityExchange), SqlDbType.Char, ParameterDirection.Input, 4);//VenueID
+            AddDecimalParameter(command, "@LastQty", tradeCaptureReport.LastQty, ParameterDirection.Input, 18, 0);//Volume
+            AddDecimalParameter(command, "@LastPx", tradeCaptureReport.LastPx, ParameterDirection.Input, 18, 6);//Price
+
+            AddDecimalParameter(command, "@CurrentCreditValue", tradeCaptureReport.CurrentCreditValue, ParameterDirection.Input, 18, 2);//CurrentCreditValue
+            AddParameter(command, "@ATHEXTradeType", _trim(tradeCaptureReport.ATHEXTradeType), SqlDbType.Char, ParameterDirection.Input, 2);//TradeType
+            AddParameter(command, "@DEA", tradeCaptureReport.DirectElectronicAccess, SqlDbType.Char, ParameterDirection.Input, 1);//DirectElectronicAccess
+
+            AddParameter(command, "@NoSides", (int)tradeCaptureReport.NoSides, SqlDbType.Int);
+
+            /*OurSide*/
+            AddParameter(command, "@Account", tradeCaptureReport.OurSide.Account, SqlDbType.Char, ParameterDirection.Input, 12);//CSDAccountID
+            AddParameter(command, "@EnteringTraderID", tradeCaptureReport.OurSide.EnteringTraderID, SqlDbType.Char, ParameterDirection.Input, 5);//TraderID
+            AddParameter(command, "@ExecutingFirmID", tradeCaptureReport.OurSide.ExecutingFirmID, SqlDbType.Char, ParameterDirection.Input, 4);//MemberID
+            AddParameter(command, "@ClearingFirmID", tradeCaptureReport.OurSide.ClearingFirmID, SqlDbType.Char, ParameterDirection.Input, 4);//ClearingMemberID
+            AddDecimalParameter(command, "@ClientID", tradeCaptureReport.OurSide.ClientID, ParameterDirection.Input, 18, 0);//ClientID
+            AddParameter(command, "@ClientIDQualifier", tradeCaptureReport.OurSide.ClientIDQualifier, SqlDbType.Char, ParameterDirection.Input, 1);//ClientIDQualifier
+            AddDecimalParameter(command, "@ExecutionWithinFirmID", tradeCaptureReport.OurSide.ExecutionWithinFirmID, ParameterDirection.Input, 18, 0);//ExecutionWithinFirmID
+            AddParameter(command, "@ExecutionWithinFirmIDQualifier", tradeCaptureReport.OurSide.ExecutionWithinFirmIDQualifier, SqlDbType.Char, ParameterDirection.Input, 1);//ExecutionWithinFirmIDQualifier
+            AddDecimalParameter(command, "@InvestmentDecisionID", tradeCaptureReport.OurSide.InvestmentDecisionID, ParameterDirection.Input, 18, 0);//InvestmentDecisionID
+            AddParameter(command, "@InvestmentDecisionIDQualifier", tradeCaptureReport.OurSide.InvestmentDecisionIDQualifier, SqlDbType.Char, ParameterDirection.Input, 1);//InvestmentDecisionIDQualifier
+            AddDecimalParameter(command, "@NonExecutingBrokerID", tradeCaptureReport.OurSide.NonExecutingBrokerID, ParameterDirection.Input, 18, 0);//NonExecutingBrokerID
+            AddParameter(command, "@PositionEffect", tradeCaptureReport.OurSide.PositionEffect, SqlDbType.Char, ParameterDirection.Input, 1);//PositionEffect
+            AddParameter(command, "@TradingCapacity", tradeCaptureReport.OurSide.TradingCapacity, SqlDbType.Char, ParameterDirection.Input, 1);//Side
+            AddParameter(command, "@Side", tradeCaptureReport.OurSide.Side, SqlDbType.Char, ParameterDirection.Input, 1);//Side
+
+            /*OtherSide*/
+            AddParameter(command, "@ContraMemberID", _trim(tradeCaptureReport.OtherSide.ExecutingFirmID), SqlDbType.Char, ParameterDirection.Input, 4);//ContraMemberID
+            AddParameter(command, "@ContraTraderID", _trim(tradeCaptureReport.OtherSide.EnteringTraderID), SqlDbType.Char, ParameterDirection.Input, 5);//ContraTraderID
+            AddParameter(command, "@ContraSide", tradeCaptureReport.OtherSide.Side, SqlDbType.Char, ParameterDirection.Input, 1);//Side
+
+            AddParameter(command, "@OrderNumber", _trim(tradeCaptureReport.OrderNumber), SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@TradeDate", _trim(tradeCaptureReport.TradeDate), SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@TradeTime", _trim(tradeCaptureReport.TradeTime), SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@TimeStamp", tradeCaptureReport.Timestamp, SqlDbType.Char);
+            /*Common Parameters:*/
+            AddParameter(command, "@appMsgId", message.AppMsgID, SqlDbType.Int);
+            AddParameter(command, "@msgSeqNum", message.MsgSeqNum, SqlDbType.Int);
+            AddParameter(command, "@AppID", Globals.AppID, SqlDbType.UniqueIdentifier);
+            AddParameter(command, "@msgSource", (byte)message.Source, SqlDbType.TinyInt);
+            AddParameter(command, "@DayOfYear", Globals.DayOfYear, SqlDbType.Int);
+            AddParameter(command, "@ATHEXServer", (byte)message.ATHEXServer, SqlDbType.TinyInt);
+
+
+            try
+            {
+                command.Connection.Open();
+                command.ExecuteNonQuery();
+            }
+            finally
+            {
+                command.Connection.Close();
+            }
+        }
 
         public void UpdateOrderProcessAndStatusCode(FIXInMessage message, int orderId, OrderProcessCodeEnum processCode, char ordStatus, string rejReasCode = default)
         {

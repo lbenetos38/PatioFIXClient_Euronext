@@ -5,10 +5,7 @@ using System.Data.SqlClient;
 
 namespace PatioFIX.Common.BLL.Evaluators
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    class NewTradeConfirmationEvaluator : BaseEvaluator
+    class TradeCaptureReportEvaluator : BaseEvaluator
     {
         readonly Logger theLogger = null;
 
@@ -16,35 +13,52 @@ namespace PatioFIX.Common.BLL.Evaluators
         /// 
         /// </summary>
         /// <param name="datalayer"></param>
-        public NewTradeConfirmationEvaluator(IOdlDataLayer datalayer) : base(datalayer)
+        public TradeCaptureReportEvaluator(IOdlDataLayer datalayer) : base(datalayer)
         {
-            theLogger = new Logger("TF_Evaluator");
+            theLogger = new Logger("AE_Evaluator");
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fixInMessage">Το αρχικο fixMessage το οποιο μετατραπηκε στο αντιστοιχο ODLMessage</param>
-        /// <param name="odlMessage">Το τελικό ODL message το οποιο προοριζεται για αποθηκευση στο συστημα μας</param>
+        /// <param name="fixInMessage"></param>
+        /// <param name="odlMessage"></param>
         /// <returns></returns>
         /// <exception cref="PtBusinessException"></exception>
         public override EvaluationResult Evaluate(FIXInMessage fixInMessage, IODLMessage odlMessage)
         {
             #region input validation
-            if (fixInMessage.ODLMessageType != ODLMessageTypeEnum.New_Trade_Confirmation) throw new PtBusinessException($"InvalidMessageType. Need New_Trade_Confirmation but received {fixInMessage.ODLMessageType}");
+            if (fixInMessage.ODLMessageType != ODLMessageTypeEnum.Trade_Capture_Report) throw new PtBusinessException($"InvalidMessageType. Need Trade_Capture_Report but received {fixInMessage.ODLMessageType}");
             #endregion
-
 
             try
             {
                 //Κανουμε cast το comObject στον σωστο συγκεκριμένο τύπο
-                var trade = (NewTradeConfirmationMessage)odlMessage;
+                var trade = (TradeCaptureReportMessage)odlMessage;
 
 
                 if (fixInMessage.Source == ODLMesssageSource.Administrator)
                 {
-                    OdlDal.InsertTrade(fixInMessage, trade);
+                    theLogger.Info(trade.ToString());
+
+                    if (trade.MatchStatus != MatchStatusEnum.Matched)
+                    {
+                        theLogger.Warning($"TradeCaptureReport SKIPPED (MatchStatus != Matched), TradeReportID={trade.TradeReportID}, AppMsgID={fixInMessage.AppMsgID} ");
+                        return EvaluationResult.Success;
+                    }
+                    if (trade.TradeReportType != TradeReportTypeEnum.Submit)
+                    {
+                        theLogger.Warning($"TradeCaptureReport SKIPPED (TradeReportType != Submit), TradeReportID={trade.TradeReportID}, AppMsgID={fixInMessage.AppMsgID} ");
+                        return EvaluationResult.Success;
+                    }
+                    if (trade.TradeReportTransType != TradeReportTransTypeEnum.Replace)
+                    {
+                        theLogger.Warning($"TradeCaptureReport SKIPPED (TradeReportTransType != Replace), TradeReportID={trade.TradeReportID}, AppMsgID={fixInMessage.AppMsgID} ");
+                        return EvaluationResult.Success;
+                    }
+
+                    OdlDal.InsertTradeCaptureReport(fixInMessage, trade);
                 }
             }
             catch (SqlException ex)
@@ -76,6 +90,5 @@ namespace PatioFIX.Common.BLL.Evaluators
 
             return EvaluationResult.Success;
         }
-
     }
 }

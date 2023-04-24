@@ -1,4 +1,4 @@
-﻿namespace PatioFIX.Common.Enumerations
+﻿namespace PatioFIX.Common
 {
     /// <summary>
     /// Supported values for PartyRole (Tag = 452, Type: int)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Text;
 using System.Threading;
 
@@ -224,7 +223,7 @@ namespace PatioFIX.Common
         /// <returns></returns>
         public bool CanSend()
         {
-            if(this.AbandonedInterval>0)
+            if (this.AbandonedInterval > 0)
             {
                 lock (_lockObject)
                 {

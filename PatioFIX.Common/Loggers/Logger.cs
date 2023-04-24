@@ -99,7 +99,7 @@ namespace PatioFIX.Common
 
             //if (m_traceLevel >= TraceLevel.Error)
             //{
-                _nlogLogger.Error(msg);
+            _nlogLogger.Error(msg);
             //}
         }
 
@@ -111,9 +111,9 @@ namespace PatioFIX.Common
 
             //if (m_traceLevel >= TraceLevel.Error)
             //{
-                string fullmsg = Globals.UnWindException(ex);
+            string fullmsg = Globals.UnWindException(ex);
 
-                _nlogLogger.Error(ex, fullmsg);
+            _nlogLogger.Error(ex, fullmsg);
             //}
         }
 
@@ -126,7 +126,7 @@ namespace PatioFIX.Common
 
             //if (m_traceLevel >= TraceLevel.Warning)
             //{
-                _nlogLogger.Warn(msg);
+            _nlogLogger.Warn(msg);
             //}
         }
         public void Warning(Exception ex)
@@ -138,9 +138,9 @@ namespace PatioFIX.Common
 
             //if (m_traceLevel >= TraceLevel.Warning)
             //{
-                string fullmsg = Globals.UnWindException(ex);
+            string fullmsg = Globals.UnWindException(ex);
 
-                _nlogLogger.Warn(ex, fullmsg);
+            _nlogLogger.Warn(ex, fullmsg);
             //}
         }
 

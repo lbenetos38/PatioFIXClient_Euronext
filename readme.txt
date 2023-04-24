@@ -27,7 +27,7 @@ EB_Sender5				ATHEX			EBusername5	12084	TRUE		TRUE				Password1.
 EB_Sender6				ATHEX			EBusername6	8085	TRUE		TRUE				ebF1xUs#R2			IT4Shadow.PatioFixAdmin
 EB_Sender6				ATHEX			EBusername6	12085	TRUE		TRUE				Password1.
 
-EB_Sender7				ATHEX			EBusername7	8086	FALSE		TRUE				Password1.			Horizon
+EB_Sender7				ATHEX			EBusername7	8086	FALSE		TRUE				ebF1xUs#R3			Horizon
 EB_Sender7				ATHEX			EBusername7	12086	FALSE		TRUE				Password1.
 
 EB_Sender8				ATHEX			EBusername8	8087	FALSE		TRUE				ebF1xUs#R8			Daidalos Shadow

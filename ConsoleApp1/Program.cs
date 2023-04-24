@@ -17,7 +17,7 @@ namespace ConsoleApp1
 
             Thread.Sleep(4000);
 
-            Console.WriteLine( DateTime.Now.Subtract(LastFixStopDT).TotalMilliseconds);
+            Console.WriteLine(DateTime.Now.Subtract(LastFixStopDT).TotalMilliseconds);
         }
     }
 }

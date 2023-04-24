@@ -27,7 +27,8 @@ namespace PatioFIX.Common.DAL
 
         void InsertSecurityPrice(FIXInMessage message, SecurityPricesMessage securityPrice);
         void InsertSecurityStatus(FIXInMessage message, SecurityStatusMessage securityStatus);
-        void InsertTrades(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation);
+        void InsertTrade(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation);
+        void InsertTradeCaptureReport(FIXInMessage message, TradeCaptureReportMessage tradeCaptureReport);
 
 
         void UpdateOrderProcessAndStatusCode(FIXInMessage message, int orderId, OrderProcessCodeEnum processCode, char ordStatus, string rejReasCode);

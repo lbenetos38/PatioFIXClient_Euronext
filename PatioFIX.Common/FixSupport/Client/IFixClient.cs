@@ -29,7 +29,7 @@ namespace PatioFIX.Common
         /// Αποθηκευει το ποτε "σταματησε" ο FixClient
         /// </summary>
         public DateTime LastFixStopDT { get; }
-        
+
         /// <summary>
         /// Μας λεει εαν μπορουμε να στείλουμε στον FIX Server πακέτα
         /// </summary>

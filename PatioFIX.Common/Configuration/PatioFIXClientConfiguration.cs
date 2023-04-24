@@ -2,7 +2,6 @@
 using PatioFIX.Common.FixSupport;
 using System;
 using System.Diagnostics;
-using static System.Collections.Specialized.BitVector32;
 
 namespace PatioFIX.Common.Configuration
 {

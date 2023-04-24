@@ -69,8 +69,8 @@ namespace PatioFIX.Common.BLL.Messages
         public ODLMessageTypeEnum ODLMessageType => ODLMessageTypeEnum.Rejection;
 
         public string Timestamp { get; private set; }
-        public string MemberID => m_executionReportMessage.ExecutingFirm.PartyID;
-        public string TraderID => m_executionReportMessage.EnteringTrader.PartyID;
+        public string MemberID => m_executionReportMessage.Parties.ExecutingFirm.PartyID;
+        public string TraderID => m_executionReportMessage.Parties.EnteringTrader.PartyID;
 
         public string SecurityID { get; internal set; }
         public char SecurityIDSource { get; internal set; }

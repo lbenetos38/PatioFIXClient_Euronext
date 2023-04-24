@@ -38,7 +38,7 @@ namespace PatioFIX.Common
             m_messages[(int)ODLMessageTypeEnum.Order_Change_Confirmation] = new OrderChangeConfirmationMessage();
             m_messages[(int)ODLMessageTypeEnum.New_Trade_Confirmation] = new NewTradeConfirmationMessage();
             //m_messages[(int)ODLMessageType.Quote_Mass_Cancel] = new QuoteMassCancelMessage();
-            //m_messages[(int)ODLMessageType.Reserved1] = null;
+            m_messages[(int)ODLMessageTypeEnum.Trade_Capture_Report] = new TradeCaptureReportMessage();
             m_messages[(int)ODLMessageTypeEnum.Rejection] = new RejectMessage();
             m_messages[(int)ODLMessageTypeEnum.OrderCancelReject] = new OrderCancelRejectMessage();
             m_messages[(int)ODLMessageTypeEnum.Credit_Limit_Information] = new CreditLimitInfoMessage();
@@ -275,7 +275,7 @@ namespace PatioFIX.Common
                     //'AD'    Trade Capture Report Request(AD)
                     //'AE'    Trade Capture Report(AE)
                     if (msgType[1] == 'E')
-                        return ODLMessageTypeEnum.Ignored_Message;// Trade Capture Report(AE)           | Στο ODL ερχεται σαν TF μηνυμα
+                        return ODLMessageTypeEnum.Trade_Capture_Report;// Trade Capture Report(AE)           | Στο ODL ερχεται σαν TF μηνυμα
                     //'AF'    Order Mass Status Request(AF)
                     //'AG'    Quote Request Reject(AG)
                     //'AH'    RFQ Request(AH)

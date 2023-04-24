@@ -1,4 +1,4 @@
-﻿using PatioFIX.Common.Enumerations;
+﻿using PatioFIX.Common.BLL.MessagesIn;
 using PatioFIX.Common.FixSupport;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,8 @@ namespace PatioFIX.Common.BLL.Messages
     /// </summary>
     public class ExecutionReportMessage
     {
+        PartiesContainer m_parties = new PartiesContainer("ExecutionReportMessage", Globals.FixClient.ValidateDuplicatePartyRole, Globals.FixClient.ValidateRepeatingGroupEntryCount);
+
         /// <summary>
         /// 
         /// </summary>
@@ -21,17 +23,8 @@ namespace PatioFIX.Common.BLL.Messages
             this.ExecID = default;
             this.ExecRefID = default;
             this.ExecType = default;
-            this.NoPartyIDs = default;
 
-            this.ExecutingFirm.EmptyValues();
-            this.ClientIdentificationCode.EmptyValues();
-            this.ClearingFirm.EmptyValues();
-            this.ExecutionWithinFirm.EmptyValues();
-            this.ContraFirm.EmptyValues();
-            this.NonExecutingBroker.EmptyValues();
-            this.EnteringTrader.EmptyValues();
-            this.ContraTrader.EmptyValues();
-            this.InvestmentDecisionWithinFirm.EmptyValues();
+            m_parties.EmptyValues();
 
             this.Account = default;
             this.Currency = default;
@@ -112,7 +105,7 @@ namespace PatioFIX.Common.BLL.Messages
             if (message.Contains(Tags.ExecRefID)) this.ExecRefID = message[Tags.ExecRefID].AsString;
             this.ExecType = message[Tags.ExecType].AsChar;
 
-            ParseParties(message, logger, Globals.FixClient.ValidateDuplicatePartyRole, Globals.FixClient.ValidateRepeatingGroupEntryCount);
+            m_parties.ParseParties(message, logger);
 
             this.Account = message[Tags.Account].AsString;
             if (message.Contains(Tags.Currency)) this.Currency = message[Tags.Currency].AsString;
@@ -177,115 +170,6 @@ namespace PatioFIX.Common.BLL.Messages
 
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="logger"></param>
-        /// <param name="validateDuplicatePartyRole"></param>
-        /// <param name="validateRepeatingGroupEntryCount"></param>
-        void ParseParties(FIXMessage message, Logger logger, bool validateDuplicatePartyRole, bool validateRepeatingGroupEntryCount)
-        {
-            var party = new PartyComponent();
-            int actualGroupEntryCount = 0;
-
-            /*
-             * Αποθηκευουμε την τιμη του NoPartyIDs:
-             */
-            this.NoPartyIDs = message[Tags.NoPartyIDs].AsInt;       //REQUIRED
-            if (this.NoPartyIDs == 0)
-            {
-                //Δεν εχουμε επαναλαμβανομενα 'Parties Group'
-                return;
-            }
-
-            /*
-             * Θελουμε το index μεσα στον πινακα των FixFields του  message, το οποιο περιεχει
-             * το 1o μελος του 1ου 'Party Group':
-             */
-            int idx = message.IndexOfTag453 + 1;
-            /*
-             * Περπαταω ολα τα πεδία του message απο το NoPartyIDs και μετα μεχρι να βρω το πρωτο
-             * πεδιο που δεν εχει σχεση με 'Parties Group':
-             */
-            var field = message.m_fields[idx++];
-            while (PartyComponent.IsFieldRelated(field))
-            {
-                if (party.HasValue(field.Tag))
-                {
-                    SetOurParty(message, party, logger, validateDuplicatePartyRole);
-                    actualGroupEntryCount++;
-                    party.Reset();
-                }
-
-                party.SetValue(field);
-                field = message.m_fields[idx++];
-            }
-            /*
-             * Οταν βγαινουμε απο το παραπανω while block, ακομα δεν εχουμε αποθηκευσει το τελευταιο party που μαζευαμε...
-             * Ελεγχουμε ομως εαν ειχαμε οντως εστω και ενα
-             */
-            if (party.HasValue(Tags.PartyRole))
-            {
-                SetOurParty(message, party, logger, validateDuplicatePartyRole);
-                actualGroupEntryCount++;
-            }
-
-            if (validateRepeatingGroupEntryCount)
-            {
-                if (this.NoPartyIDs != actualGroupEntryCount)
-                {
-                    throw new Exception($"ParseParties:: Inconsistency with NoPartyIDs (Tag 453). Excpecting {this.NoPartyIDs}, but actual number is {actualGroupEntryCount}");
-                }
-            }
-
-        }
-
-        void SetOurParty(FIXMessage message, PartyComponent component, Logger logger, bool validateDuplicatePartyRole)
-        {
-            if (component.PartyRole == /*Executing Firm*/1)
-            {
-                this.ExecutingFirm.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Client ID*/3)
-            {
-                this.ClientIdentificationCode.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Clearing Firm*/4)
-            {
-                this.ClearingFirm.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Executing Trader - (MIFID II: Execution within firm)*/12)
-            {
-                this.ExecutionWithinFirm.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Contra Firm*/17)
-            {
-                this.ContraFirm.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Correspondent Broker - (MIFID II: Non-executing broker)*/26)
-            {
-                this.NonExecutingBroker.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Entering trader*/36)
-            {
-                this.EnteringTrader.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Contra Trader*/37)
-            {
-                this.ContraTrader.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else if (component.PartyRole == /*Investment Decision Maker - (MIFID II: Investment decision within firm)*/122)
-            {
-                this.InvestmentDecisionWithinFirm.Set(message, component, logger, validateDuplicatePartyRole);
-            }
-            else
-            {
-                MetricsProxy.Instance.OnParsingWarning();
-                logger.Warning($"ParseParties:: Unexpected PartyRole (452={component.PartyRole}), {message}");
-            }
-        }
 
 
 
@@ -419,49 +303,10 @@ namespace PatioFIX.Common.BLL.Messages
         /// </summary>
         internal char ExecType;
 
-        #region Parties
         /// <summary>
-        /// NoPartyIDs (Tag = 453, Type: NumInGroup)
+        /// 
         /// </summary>
-        protected int NoPartyIDs;
-
-        /// <summary>
-        /// 1        Executing Firm
-        /// </summary>
-        internal PartyComponent ExecutingFirm = new PartyComponent(PartyRole.ExecutingFirm);
-        /// <summary>
-        /// 3 Client ID (MIFID II: Client identification code)
-        /// </summary>
-        internal PartyComponent ClientIdentificationCode = new PartyComponent(PartyRole.ClientID);
-        /// <summary>
-        /// 4 Clearing Firm
-        /// </summary>
-        internal PartyComponent ClearingFirm = new PartyComponent(PartyRole.ClearingFirm);
-        /// <summary>
-        /// 12 Executing trader (MIFID II: Execution within firm)
-        /// </summary>
-        internal PartyComponent ExecutionWithinFirm = new PartyComponent(PartyRole.ExecutingTrader);
-        /// <summary>
-        /// 17 Contra Firm
-        /// </summary>
-        internal PartyComponent ContraFirm = new PartyComponent(PartyRole.ContraFirm);
-        /// <summary>
-        /// 26 Correspondent broker (MIFID II: Non-executing broker)
-        /// </summary>
-        internal PartyComponent NonExecutingBroker = new PartyComponent(PartyRole.CorrespondentBroker);
-        /// <summary>
-        /// 36 Entering trader (Trader ID)
-        /// </summary>
-        internal PartyComponent EnteringTrader = new PartyComponent(PartyRole.EnteringTrader);
-        /// <summary>
-        /// 37 Contra Trader
-        /// </summary>
-        internal PartyComponent ContraTrader = new PartyComponent(PartyRole.ContraTrader);
-        /// <summary>
-        /// 122 Investment Decision Maker (MIFID II: Investment decision within firm)
-        /// </summary>
-        internal PartyComponent InvestmentDecisionWithinFirm = new PartyComponent(PartyRole.InvestmentDecisionMaker);
-        #endregion
+        internal PartiesContainer Parties => m_parties;
 
 
         /// <summary>

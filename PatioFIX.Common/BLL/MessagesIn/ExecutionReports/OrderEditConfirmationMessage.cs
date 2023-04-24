@@ -91,8 +91,8 @@ namespace PatioFIX.Common.BLL.Messages
         /// </summary>
         public ODLMessageTypeEnum ODLMessageType => ODLMessageTypeEnum.Order_Edit_Confirmation;
 
-        public string MemberID => m_executionReportMessage.ExecutingFirm.PartyID;
-        public string TraderID => m_executionReportMessage.EnteringTrader.PartyID;
+        public string MemberID => m_executionReportMessage.Parties.ExecutingFirm.PartyID;
+        public string TraderID => m_executionReportMessage.Parties.EnteringTrader.PartyID;
         public string SecurityExchange => m_executionReportMessage.SecurityExchange;
         public string SecurityID => m_executionReportMessage.SecurityID;
         public char SecurityIDSource => m_executionReportMessage.SecurityIDSource;

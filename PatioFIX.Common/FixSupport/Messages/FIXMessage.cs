@@ -72,6 +72,7 @@ namespace PatioFIX.Common.FixSupport
          *      NoPartyIDs (Tag = 453, Type: NumInGroup)
          * τοτε στο IndexOfTag453 εχουμε την θεση του στο array m_fields (FIXField[]).
          * εαν δεν υπαρχει το tag αυτο, τοτε φερει την τιμη -1
+         * Σε περιπτωση που υπάρχουν δυο η περισσοτερα tags στο FIX μήνυμα, περιεχει την "θεση" του πρωτου tag
          */
         public int IndexOfTag453 { get; private set; }
         #endregion
@@ -262,7 +263,14 @@ namespace PatioFIX.Common.FixSupport
                         }
                         else if (field.Tag == Tags.NoPartyIDs)
                         {
-                            this.IndexOfTag453 = (FieldCount - 1);
+                            /*
+                             * Μπορει να υπαρχουν επαναλαμβανομενα NoPartyIDs μεσα σε ενα FixMessage
+                             * (Για παραδειγμα τα Trade Capture Report (AE), περιεχουν δυο ομαδες απο Parties)
+                             */
+                            if (this.IndexOfTag453 == -1)
+                            {
+                                this.IndexOfTag453 = (FieldCount - 1);
+                            }
                         }
                         else if (field.Tag == Tags.Headline)
                         {
@@ -514,6 +522,23 @@ namespace PatioFIX.Common.FixSupport
                             return true;
                     return false;
             }
+        }
+        /// <summary>
+        /// Επιστρεφει το index μεσα στον πινακα m_fields στο οποιο υπαρχει το συγκεκριμενο tag.
+        /// Returns -1 if the tag does not exist
+        /// </summary>
+        /// <param name="tag">The tag of the field to check.</param>
+        /// <param name="instance">The instance of the field (if there are multiple).</param>
+        /// <returns></returns>
+        public int GetIndex(int tag, int instance = 0)
+        {
+            if (!Valid) return -1;
+
+            for (var i = 0; i < FieldCount - 1; i++)
+                if (m_fields[i].Tag == tag && --instance < 0)
+                    return i;
+
+            return -1;
         }
 
         /// <summary>

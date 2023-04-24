@@ -19,7 +19,7 @@ namespace PatioFIX.Common.BLL.Evaluators
         /// <param name="datalayer"></param>
         public OrderEntryConfirmationEvaluator(IOdlDataLayer datalayer) : base(datalayer)
         {
-            theLogger = new Logger("OrderEntryConfirmationEvaluator");
+            theLogger = new Logger("TB_Evaluator");
         }
 
 

@@ -65,9 +65,9 @@
         /// </summary>
         Quote_Mass_Cancel = 12,
         /// <summary>
-        /// 13. Reserved,
+        /// 13. Trade Capture Report (AE)
         /// </summary>
-        Reserved1 = 13,
+        Trade_Capture_Report = 13,
         /// <summary>
         /// 14. Rejection ("TR")
         /// </summary>

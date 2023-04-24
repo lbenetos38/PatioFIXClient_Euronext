@@ -1,5 +1,4 @@
 ﻿using PatioFIX.Common.FixSupport;
-using System.Globalization;
 
 namespace PatioFIX.Common.BLL.Messages
 {
@@ -101,68 +100,6 @@ namespace PatioFIX.Common.BLL.Messages
             }
 
 
-            #region ClientID, InvestmentDecisionID, ExecutionWithinFirmID, NonExecutingBrokerID Decimal Value initialization
-            /*
-             * Περιμενω οτι το ClientID θα περιεχει καποιο ακεραιο αριθμο
-             * Αυτο μας το επιβαλει η βαση μας (ODL.dbo.Trades -> [TrdClientID] [decimal](18, 0) NULL)
-             */
-            if (decimal.TryParse(m_executionReportMessage.ClientIdentificationCode.PartyID, NumberStyles.None, NumberFormatInfo.InvariantInfo, out decimal _clientID))
-            {
-                this.ClientID = _clientID;
-            }
-            else
-            {
-                this.ClientID = null;
-                MetricsProxy.Instance.OnParsingWarning();
-                logger.Warning($"NewTradeConfirmationMessage -> ClientIdentificationCode.PartyID '{m_executionReportMessage.ClientIdentificationCode.PartyID}' cannot be Parsed as decimal");
-            }
-
-            /*
-             * Περιμενω οτι το InvestmentDecisionID θα περιεχει καποιο ακεραιο αριθμο
-             * Αυτο μας το επιβαλει η βαση μας (ODL.dbo.Trades -> [TrdInvestmentDecisionID] [decimal](18, 0) NULL)
-             */
-            if (decimal.TryParse(m_executionReportMessage.InvestmentDecisionWithinFirm.PartyID, NumberStyles.None, NumberFormatInfo.InvariantInfo, out decimal _investmentDecisionID))
-            {
-                this.InvestmentDecisionID = _investmentDecisionID;
-            }
-            else
-            {
-                this.InvestmentDecisionID = null;
-                MetricsProxy.Instance.OnParsingWarning();
-                logger.Warning($"NewTradeConfirmationMessage -> InvestmentDecisionWithinFirm.PartyID '{m_executionReportMessage.InvestmentDecisionWithinFirm.PartyID}' cannot be Parsed as decimal");
-            }
-
-            /*
-             * Περιμενω οτι το ExecutionWithinFirmID θα περιεχει καποιο ακεραιο αριθμο
-             * Αυτο μας το επιβαλει η βαση μας (ODL.dbo.Trades -> [TrdExecutionWithinFirmId] [decimal](18, 0) NULL)
-             */
-            if (decimal.TryParse(m_executionReportMessage.ExecutionWithinFirm.PartyID, NumberStyles.None, NumberFormatInfo.InvariantInfo, out decimal _executionWithinFirmID))
-            {
-                this.ExecutionWithinFirmID = _executionWithinFirmID;
-            }
-            else
-            {
-                this.ExecutionWithinFirmID = null;
-                MetricsProxy.Instance.OnParsingWarning();
-                logger.Warning($"NewTradeConfirmationMessage -> ExecutionWithinFirm.PartyID '{m_executionReportMessage.ExecutionWithinFirm.PartyID}' cannot be Parsed as decimal");
-            }
-
-            /*
-             * Περιμενω οτι το NonExecutingBrokerID θα περιεχει καποιο ακεραιο αριθμο
-             * Αυτο μας το επιβαλει η βαση μας (ODL.dbo.Trades -> [TrdNonExecutingBrokerID] [decimal](18, 0) NULL)
-             */
-            if (decimal.TryParse(m_executionReportMessage.NonExecutingBroker.PartyID, NumberStyles.None, NumberFormatInfo.InvariantInfo, out decimal _nonExecutingBrokerID))
-            {
-                this.NonExecutingBrokerID = _nonExecutingBrokerID;
-            }
-            else
-            {
-                this.NonExecutingBrokerID = null;
-                MetricsProxy.Instance.OnParsingWarning();
-                logger.Warning($"NewTradeConfirmationMessage -> NonExecutingBroker.PartyID '{m_executionReportMessage.NonExecutingBroker.PartyID}' cannot be Parsed as decimal");
-            }
-            #endregion
-
 
             if (message.Contains(Tags.TransactTime))
                 Timestamp = message[Tags.TransactTime].AsODLTimestamp;
@@ -180,8 +117,8 @@ namespace PatioFIX.Common.BLL.Messages
         /// </summary>
         public ODLMessageTypeEnum ODLMessageType => ODLMessageTypeEnum.New_Trade_Confirmation;
 
-        public string MemberID => m_executionReportMessage.ExecutingFirm.PartyID;
-        public string TraderID => m_executionReportMessage.EnteringTrader.PartyID;
+        public string MemberID => m_executionReportMessage.Parties.ExecutingFirm.PartyID;
+        public string TraderID => m_executionReportMessage.Parties.EnteringTrader.PartyID;
         public string VenueID => m_executionReportMessage.SecurityExchange;
         public char BoardID
         {
@@ -208,7 +145,7 @@ namespace PatioFIX.Common.BLL.Messages
         public string OrderRefID => m_executionReportMessage.OrderRefID;
         public char GOIFlag { get; private set; }
         public char ShortSellFlag { get; private set; }
-        public string ClearingMemberID => m_executionReportMessage.ClearingFirm.PartyID;
+        public string ClearingMemberID => m_executionReportMessage.Parties.ClearingFirm.PartyID;
         public char PositionEffect => m_executionReportMessage.PositionEffect;
         public char SettlType => m_executionReportMessage.SettlType;
         /// <summary>
@@ -273,6 +210,19 @@ namespace PatioFIX.Common.BLL.Messages
         public char PhaseID => m_executionReportMessage.TradingSessionID;
         public char SecurityStatus => m_executionReportMessage.SecurityStatus;
         public string TradeType => m_executionReportMessage.ΑΤΗΕΧTradeType;
+        /*
+         * TradeStatus: A 2single character alphanumeric field that indicates the status of a Trade
+         *      “ ” Normal Completed Trade
+         *      “L ” Alleged
+         *      “A ” Accepted
+         *      “D ” Declined
+         *      “E ” Expired
+         *      “X ” Cancelled trade
+         *      “C ” Cancelled incomplete trade report
+         *      “U ” Changed trade (XNet)
+         *      
+         *  Αν το TF μήνυμα έχει tradeStatus="L" σημαίνει ότι είναι Alleged και δεν το γράφουμε στον πίνακα με τα Trades.
+         */
         public string TradeStatus { get; private set; }
         public char LastLiquidityIndicator { get; private set; }
         /// <summary>
@@ -281,53 +231,39 @@ namespace PatioFIX.Common.BLL.Messages
         public double NotionalAmmount => m_executionReportMessage.GrossTradeAmt;
         public char DirectElectronicAccess { get; private set; }
 
-        public decimal? ClientID { get; private set; }
-        public char ClientIDQualifier
-        {
-            get
-            {
-                var qualifier = m_executionReportMessage.ClientIdentificationCode.PartyRoleQualifier;
+        #region Parties
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal? ClientID => m_executionReportMessage.Parties.ClientID;
+        /// <summary>
+        /// 
+        /// </summary>
+        public char ClientIDQualifier => m_executionReportMessage.Parties.ClientIDQualifier;
 
-                if (qualifier == /*Firm or legal entity*/23)
-                    return 'L';//76
-                else if (qualifier == /*Natural person*/24)
-                    return 'N';//78
-                else
-                    return 'N';//78
-                //return 'X';//88
-            }
-        }
-        public decimal? InvestmentDecisionID { get; private set; }
-        public char InvestmentDecisionIDQualifier
-        {
-            get
-            {
-                var qualifier = m_executionReportMessage.InvestmentDecisionWithinFirm.PartyRoleQualifier;
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal? InvestmentDecisionID => m_executionReportMessage.Parties.InvestmentDecisionID;
+        /// <summary>
+        /// 
+        /// </summary>
+        public char InvestmentDecisionIDQualifier => m_executionReportMessage.Parties.InvestmentDecisionIDQualifier;
 
-                if (qualifier == /*Algorithm*/22)
-                    return 'A';//65
-                else if (qualifier == /*Natural person*/24)
-                    return 'N';//78
-                else
-                    return 'X';//78
-            }
-        }
-        public decimal? ExecutionWithinFirmID { get; private set; }
-        public char ExecutionWithinFirmIDQualifier
-        {
-            get
-            {
-                var qualifier = m_executionReportMessage.ExecutionWithinFirm.PartyRoleQualifier;
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal? ExecutionWithinFirmID => m_executionReportMessage.Parties.ExecutionWithinFirmID;
+        /// <summary>
+        /// 
+        /// </summary>
+        public char ExecutionWithinFirmIDQualifier => m_executionReportMessage.Parties.ExecutionWithinFirmIDQualifier;
 
-                if (qualifier == /*Algorithm*/22)
-                    return 'A';//65
-                else if (qualifier == /*Natural person*/24)
-                    return 'N';//78
-                else
-                    return 'X';//78
-            }
-        }
-        public decimal? NonExecutingBrokerID { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal? NonExecutingBrokerID => m_executionReportMessage.Parties.NonExecutingBrokerID;
+        #endregion
 
         public char TradingCapacity { get; private set; }
         public char LiquidityProvision { get; private set; }

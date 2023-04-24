@@ -70,7 +70,11 @@ namespace PatioFIX.Common.DAL
         {
 
         }
-        public void InsertTrades(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation)
+        public void InsertTrade(FIXInMessage message, NewTradeConfirmationMessage newTradeConfirmation)
+        {
+
+        }
+        public void InsertTradeCaptureReport(FIXInMessage message, TradeCaptureReportMessage tradeCaptureReport)
         {
 
         }

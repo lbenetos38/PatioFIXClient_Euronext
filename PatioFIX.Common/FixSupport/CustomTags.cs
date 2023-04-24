@@ -6,6 +6,7 @@
         public const int BoardID = 5506;
         public const int PhaseID = 5511;
         public const int SecurityStatus = 5522;
+        public const int ATHEXTradeType = 5529;
         public const int SecurityPrice = 5530;
         public const int ΑΤΗΕΧHaltReason = 5531;
         public const int ATHEXMsgType = 5574;
