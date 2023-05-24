@@ -42,7 +42,7 @@ namespace PatioFIX.Common.Infrastructure
             _role = settings.ClientRole;
             _emulatePausePeriod = emulatePausePeriod;
 
-            m_inbound = new FIXMessage(settings.MaxMessageLength, settings.MaxMessageFields, settings.ValidateCheckSum, settings.ValidateBodyLength);
+            m_inbound = new FIXMessage(settings.MaxMessageLength, settings.MaxMessageFields, settings.ValidateCheckSum, settings.ValidateBodyLength, theLogger);
         }
 
 
@@ -62,7 +62,7 @@ namespace PatioFIX.Common.Infrastructure
 
                     var tbuffer = CharEncoding.DefaultEncoding.GetBytes(line);
                     m_inbound.Clear();
-                    m_inbound.Parse(tbuffer, 0, tbuffer.Length, theLogger);
+                    m_inbound.Parse(tbuffer, 0, tbuffer.Length);
 
                     yield return m_inbound;
                 }

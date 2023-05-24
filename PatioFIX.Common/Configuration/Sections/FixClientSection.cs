@@ -109,11 +109,13 @@ namespace PatioFIX.Common.Configuration
 
 
         /// <summary>
-        /// 
+        /// Οριζει το μεγιστο αναμενομενο πληθος των raw bytes σε ενα FIXMessage
+        /// (ποσο μεγαλο ειναι το FIXMessage.m_rawBytes)
         /// </summary>
         public int MaxMessageLength { get; } = MaxMessageLength_MINVALUE;
         /// <summary>
-        /// 
+        /// Οριζει το μεγιστο αναμενομενο πληθος των FixFields σε ενα FIXMessage
+        /// (ποσο μεγαλο ειναι το FIXMessage.m_fields)
         /// </summary>
         public int MaxMessageFields { get; } = MaxMessageFields_MINVALUE;
 

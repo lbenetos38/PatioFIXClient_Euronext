@@ -36,6 +36,10 @@ namespace PatioFIX.Common.BLL.Messages
              *      ‘C’ Cancel order
              *      ‘S’ Suspend (deactivate) order
              *      ‘U’ Unsuspend (activate) order.
+             *      
+             *      
+             * Χρησιμοποιούμε το OrdStatus για να ξεδιαλυνουμε τις καταστασεις.
+             * Θα μπορουσαμε να συμβουλευτουμε και το ExecInst(18) και το ExecType(150)
              */
             var _ordStatus = m_executionReportMessage.OrdStatus;
             if (_ordStatus == OrdStatus.New || _ordStatus == OrdStatus.Not_Released)

@@ -48,6 +48,7 @@
 
         public int Parsing_Errors;
         public int Parsing_Warnings;
+        public int Rejection_Warnings;
 
 
 
@@ -176,6 +177,7 @@
 
             this.Parsing_Errors = default;
             this.Parsing_Warnings = default;
+            this.Rejection_Warnings = default;
 
 
             this.Unknown = 0;

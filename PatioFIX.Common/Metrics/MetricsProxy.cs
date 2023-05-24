@@ -721,6 +721,16 @@ namespace PatioFIX.Common
             }
         }
 
+        public void OnRejectionsWarning()
+        {
+            if (IsConnected)
+            {
+                lock (m_lockObj)
+                {
+                    _prepBufferAndSend(Globals.ClientRole, MetricKeysEnumeration.RejectionsWarning);
+                }
+            }
+        }
         /// <summary>
         /// Χρησιμοποιείται αποκλειστικά απο το Evaluator
         /// </summary>

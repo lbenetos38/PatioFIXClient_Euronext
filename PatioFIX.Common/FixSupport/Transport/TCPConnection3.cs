@@ -13,7 +13,7 @@ namespace PatioFIX.Common.FixSupport.Transport
         int _disposed = 0;// Whether Dispose has been called.
         const char SOH = '\u0001';
         readonly IClock _clock = new RealTimeClock();
-        readonly Logger logger;
+        readonly Logger theLogger;
         readonly FixConfiguration m_settings;
         readonly byte[] _rcvBuffer;
         readonly byte[] _asmBuffer;
@@ -43,18 +43,17 @@ namespace PatioFIX.Common.FixSupport.Transport
         /// 
         /// </summary>
         /// <param name="settings"></param>
-        /// <param name="messageReceiver"></param>
         public TCPConnection3(FixConfiguration settings)
         {
-            logger = new Logger("TCPConnection");
-            logger.Info(".ctor");
+            theLogger = new Logger("TCPConnection");
+            theLogger.Info(".ctor");
 
             m_settings = settings;
 
             _rcvBuffer = new byte[settings.MaxRcvBuffer];
             _asmBuffer = new byte[settings.MaxRcvBuffer * 2];
 
-            m_inbound = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, m_settings.ValidateCheckSum);
+            m_inbound = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, m_settings.ValidateCheckSum, m_settings.ValidateBodyLength, theLogger);
             m_stopEvent = new ManualResetEvent(false);
         }
 
@@ -87,11 +86,11 @@ namespace PatioFIX.Common.FixSupport.Transport
             if (disposing)
             {
                 //From user code...
-                logger?.Warning("Dispose(disposing = true)");
+                theLogger?.Warning("Dispose(disposing = true)");
             }
             else
             {
-                logger?.Warning("Dispose(disposing = false)");
+                theLogger?.Warning("Dispose(disposing = false)");
             }
 
             _CloseAndInitialize();
@@ -143,7 +142,7 @@ namespace PatioFIX.Common.FixSupport.Transport
 
             try
             {
-                logger.Info($"Try to connect to {m_settings.ServerIP}:{m_settings.Port1}...");
+                theLogger.Info($"Try to connect to {m_settings.ServerIP}:{m_settings.Port1}...");
 
                 lock (_sync)
                 {
@@ -151,7 +150,7 @@ namespace PatioFIX.Common.FixSupport.Transport
                     var _elapsedMS = _clock.Time.Subtract(this.LastDisconnectDT).TotalMilliseconds;
                     if (_elapsedMS < 1500)
                     {
-                        logger.Info($"Instance is HOT. Last disconnection occured before {_elapsedMS} ms. Try again...");
+                        theLogger.Info($"Instance is HOT. Last disconnection occured before {_elapsedMS} ms. Try again...");
                         return false;
                     }
 
@@ -175,19 +174,19 @@ namespace PatioFIX.Common.FixSupport.Transport
                 if (ex.ErrorCode == 10061)
                 {
                     //No connection could be made because the target machine actively refused it. 127.0.0.1:10450
-                    logger.Warning(ex.Message);
+                    theLogger.Warning(ex.Message);
                 }
                 else
                 {
                     MetricsProxy.Instance.OnTCPError();
-                    logger.Error($"SocketException, ErrorCode={ex.ErrorCode}, Message'{ex.Message}'");
+                    theLogger.Error($"SocketException, ErrorCode={ex.ErrorCode}, Message'{ex.Message}'");
                 }
                 return false;
             }
             catch (Exception ex)
             {
                 MetricsProxy.Instance.OnTCPError();
-                logger.Error(ex);
+                theLogger.Error(ex);
                 return false;
             }
 
@@ -222,7 +221,7 @@ namespace PatioFIX.Common.FixSupport.Transport
         /// </summary>
         public void Stop()
         {
-            logger.Info($"Stop()");
+            theLogger.Info($"Stop()");
 
             ThrowIfDisposed();
 
@@ -234,7 +233,7 @@ namespace PatioFIX.Common.FixSupport.Transport
             }
             catch (Exception ex)
             {
-                logger.Error(ex);
+                theLogger.Error(ex);
                 throw;
             }
         }
@@ -250,7 +249,7 @@ namespace PatioFIX.Common.FixSupport.Transport
         /// </summary>
         void _ReceiveLoop()
         {
-            logger.Info("Read Thread (_ReceiveLoop) Started");
+            theLogger.Info("Read Thread (_ReceiveLoop) Started");
 
             try
             {
@@ -258,7 +257,7 @@ namespace PatioFIX.Common.FixSupport.Transport
                 {
                     if (m_stopEvent.WaitOne(0))
                     {
-                        logger.Info("m_stopEvent isSet!");
+                        theLogger.Info("m_stopEvent isSet!");
                         break;
                     }
 
@@ -269,12 +268,12 @@ namespace PatioFIX.Common.FixSupport.Transport
                     }
                     else
                     {
-                        logger.Warning("Received 0 bytes!");
+                        theLogger.Warning("Received 0 bytes!");
                     }
 
                     if (SocketFactory.SocketIsConnected(m_socket) == false)
                     {
-                        logger.Verbose($"SocketIsConnected == FALSE");
+                        theLogger.Verbose($"SocketIsConnected == FALSE");
                         break;
                     }
                 }
@@ -286,14 +285,14 @@ namespace PatioFIX.Common.FixSupport.Transport
                     //A connection attempt failed because the connected party did not properly respond after a period of time, or established
                     //connection failed because connected host has failed to respond
                     MetricsProxy.Instance.OnTCPError();
-                    logger.Error(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                    theLogger.Error(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
 
                 }
                 else if (ex.ErrorCode == 10054)
                 {
                     //An existing connection was forcibly closed by the remote host
                     MetricsProxy.Instance.OnTCPWarning();
-                    logger.Warning(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                    theLogger.Warning(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
                 }
                 else if (ex.ErrorCode == 10053)
                 {
@@ -301,19 +300,19 @@ namespace PatioFIX.Common.FixSupport.Transport
                     //An existing connection was forcibly closed by the remote host
                     //ή
                     //An established connection was aborted by the software in your host machine.
-                    logger.Info(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                    theLogger.Info(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
                 }
                 else if (ex.ErrorCode == 10004)
                 {
                     //DISCONNECT
                     //A blocking operation was interrupted by a call to WSACancelBlockingCall.
                     MetricsProxy.Instance.OnTCPWarning();
-                    logger.Warning(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                    theLogger.Warning(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
                 }
                 else
                 {
                     MetricsProxy.Instance.OnTCPError();
-                    logger.Error(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                    theLogger.Error(string.Format("_ReceiveLoop() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
                 }
             }
             catch (ObjectDisposedException ex)
@@ -322,16 +321,16 @@ namespace PatioFIX.Common.FixSupport.Transport
                  * Το πιθανοτερο ειναι καποιο αλλο νήμα να μας εκλεισε το socket, γιατι κληθηκε η Stop() μας....
                  */
                 MetricsProxy.Instance.OnTCPWarning();
-                logger.Warning(string.Format("_ReceiveLoop() -> {0}", ex.Message));
+                theLogger.Warning(string.Format("_ReceiveLoop() -> {0}", ex.Message));
             }
             catch (Exception ex)
             {
                 MetricsProxy.Instance.OnTCPError();
-                logger.Error(string.Format("_ReceiveLoop() -> {0}", ex.Message));
+                theLogger.Error(string.Format("_ReceiveLoop() -> {0}", ex.Message));
             }
 
             Disconnect(invokeEvent: true, errorcode: 0);
-            logger.Info("Read Thread (_ReceiveLoop) Terminated");
+            theLogger.Info("Read Thread (_ReceiveLoop) Terminated");
         }
 
         /// <summary>
@@ -402,7 +401,7 @@ namespace PatioFIX.Common.FixSupport.Transport
         void _DispatchMessage(byte[] tbuffer, int numOfBytes)
         {
             m_inbound.Clear();
-            m_inbound.Parse(tbuffer, 0, numOfBytes, logger);
+            m_inbound.Parse(tbuffer, 0, numOfBytes);
 
             if (m_inbound.Valid == false)
             {
@@ -416,7 +415,7 @@ namespace PatioFIX.Common.FixSupport.Transport
             }
             catch (Exception ex)
             {
-                logger.Error($"_DispatchMessage: {ex.Message}");
+                theLogger.Error($"_DispatchMessage: {ex.Message}");
             }
         }
 
@@ -492,26 +491,26 @@ namespace PatioFIX.Common.FixSupport.Transport
                         }
                         else
                         {
-                            logger.Error("Send() -> m_socket is null");
+                            theLogger.Error("Send() -> m_socket is null");
                             return false;
                         }
                     }
                 }
                 else
                 {
-                    logger.Error("Send() -> m_socket is null");
+                    theLogger.Error("Send() -> m_socket is null");
                     return false;
                 }
             }
             catch (SocketException ex)
             {
                 MetricsProxy.Instance.OnTCPError();
-                logger.Error(string.Format("Send() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
+                theLogger.Error(string.Format("Send() -> ErrorCode= {0}, Message = {1}", ex.ErrorCode, ex.Message));
             }
             catch (Exception ex)
             {
                 MetricsProxy.Instance.OnTCPError();
-                logger.Error(string.Format("Send() -> {0}", ex.Message));
+                theLogger.Error(string.Format("Send() -> {0}", ex.Message));
             }
 
             Disconnect(true);
@@ -543,14 +542,14 @@ namespace PatioFIX.Common.FixSupport.Transport
                         }
                         catch (Exception ex)
                         {
-                            logger.Warning($"In Disconnect(), '{ex.Message}'!");
+                            theLogger.Warning($"In Disconnect(), '{ex.Message}'!");
                         }
                         m_socket.Close();
                         m_socket = null;
 
                         MetricsProxy.Instance.OnTCPDisconnect();
 
-                        logger.Info($"Disconnected.....");
+                        theLogger.Info($"Disconnected.....");
                         if (invokeEvent) OnDisconnect?.Invoke(errorcode);
                     }
                 }

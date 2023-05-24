@@ -32,6 +32,7 @@
 
         ParsingWarning = 40,
         ParsingError = 41,
+        RejectionsWarning = 42,
 
         EvaluationIime = 50,
         Receive = 51,

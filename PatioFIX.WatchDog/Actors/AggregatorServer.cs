@@ -636,6 +636,15 @@ namespace PatioFIX.WatchDog
 
                     theLogger.Verbose($"ParsingError from {origin}");
                 }
+                else if (selectedMethod == MetricKeysEnumeration.RejectionsWarning)
+                {
+                    if (origin == ODLMesssageSource.Administrator)
+                        AdminMetrics.Instance.OnRejectionsWarning();
+                    else
+                        BrokerMetrics.Instance.OnRejectionsWarning();
+
+                    theLogger.Verbose($"ParsingError from {origin}");
+                }
 
                 else if (selectedMethod == MetricKeysEnumeration.EvaluationIime)
                 {

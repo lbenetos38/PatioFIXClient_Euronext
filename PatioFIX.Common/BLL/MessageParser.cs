@@ -112,23 +112,31 @@ namespace PatioFIX.Common
                 {
                     /*  '5' 	Replace
                      * 
-                     *  Τετοιο μηνυμα παιρνουμε οταν μια εντολη απο Suspended ενεργοποιείται ξανα (Unsuspended) ->Order_Edit_Confirmation
-                     *  (σε αυτη την περιπτωση το FIX Message εχει πιο λιγα πεδία)
+                     *  Τετοιο FIX Message παιρνουμε 
+                     *  
+                     *  1)  οταν μια 'Suspended' εντολη ενεργοποιείται ξανα (Release from suspension)               -> Order_Edit_Confirmation
+                     *      (σε αυτη την περιπτωση το μηνυμα εχει πιο λιγα πεδία και επιπλεον ΠΕΡΙΕΧΕΙ ExecInst (Tag = 18) ως εξης '18=q')
+                     *  
                      *  ή
                      *  
-                     *  Απο αλλαγες/τροποοιησεις (changes) της εντολης μας -> Order_Change_Confirmation
-                     *  (σε αυτη την περιπτωση το FIX Message περιεχει και τα πεδία: OrdType, TimeInForce , Text, Price,PositionEffect ,SettlType   )
+                     *  2)  απο αλλαγες/τροποποιησεις (changes) της εντολης μας                                     -> Order_Change_Confirmation
+                     *      (σε αυτη την περιπτωση το μηνυμα περιεχει πιο πολλα πεδία (OrdType, TimeInForce , Text, Price,PositionEffect ,SettlType) και ΔΕΝ ΠΕΡΙΕΧΕΙ το  ExecInst(18))
                      */
-
-                    if (fixMessage.Contains(Tags.OrdType) || fixMessage.Contains(Tags.TimeInForce) || fixMessage.Contains(CustomTags.NoOrderAttributes))
+                    if (fixMessage.Contains(Tags.ExecInst))
                     {
-                        //Change
-                        return ODLMessageTypeEnum.Order_Change_Confirmation;//TD
+                        var _execInst = fixMessage[Tags.ExecInst].AsChar;
+                        if(_execInst == /*Release from suspension*/'q')
+                        {
+                            //Unsuspended
+                            return ODLMessageTypeEnum.Order_Edit_Confirmation;//TC
+                        }
+
+                        throw new PtException($"ExecutionReport with ExecType=Replace (150=5) -> UNEXPECTED Value for tag ExecInst '18={_execInst}'");
                     }
                     else
                     {
-                        //Unsuspended
-                        return ODLMessageTypeEnum.Order_Edit_Confirmation;//TC
+                        //Change
+                        return ODLMessageTypeEnum.Order_Change_Confirmation;//TD
                     }
                 }
                 else if (execType == '8')
@@ -138,7 +146,12 @@ namespace PatioFIX.Common
                 }
                 else if (execType == '9')
                 {
-                    //9     Suspended
+                    /*
+                     * 9     Suspended
+                     * 
+                     * Επισης το μηνυμα περιεχει και το  ExecInst (Tag = 18) ως εξης '18=S'
+                     * 
+                     */
                     return ODLMessageTypeEnum.Order_Edit_Confirmation;//TC
                 }
                 else if (execType == 'C')

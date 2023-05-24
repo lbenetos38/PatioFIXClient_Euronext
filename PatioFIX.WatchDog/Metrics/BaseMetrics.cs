@@ -374,6 +374,19 @@ namespace PatioFIX.WatchDog.Metrics
             }
         }
 
+        public void OnRejectionsWarning()
+        {
+            Monitor.Enter(m_lockObj);
+            try
+            {
+                m_accumulator.Rejection_Warnings++;
+            }
+            finally
+            {
+                Monitor.Exit(m_lockObj);
+            }
+        }
+
 
         /// <summary>
         /// Χρησιμοποιείται αποκλειστικά απο το Evaluator, και η κλήση της,

@@ -241,6 +241,10 @@ namespace PatioFIX.Common.FixSupport
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char ReadChar(this byte[] source, int offset, int count, int forTag)
         {
+            if (count == 0)
+            {
+                return (char)0; //Επιστρεφουμε μια default τιμη. To tag is mallformed (EMPTY_VALUE)!
+            }
             if (count != 1)
             {
                 throw new Exception($"NOT_VALID_SINGLE_CHARACTER (Tag{forTag}, value more than 1 characters)");
@@ -258,6 +262,10 @@ namespace PatioFIX.Common.FixSupport
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ReadBoolean(this byte[] source, int offset, int count, int forTag)
         {
+            if (count == 0)
+            {
+                return false; //Επιστρεφουμε μια default τιμη. To tag is mallformed (EMPTY_VALUE)!
+            }
             if (count != 1)
             {
                 throw new Exception($"NOT_VALID_BOOLEAN (Tag{forTag}, value more than 1 characters)");

@@ -473,6 +473,14 @@ namespace PatioFIX.Common.FixSupport
             ///!!!!!!!!!!!!!!!!!!!!Αυτο το καλει το νήμα του TCPConnector._ReceiveLoop!!!!!!!!!
             try
             {
+                if(inbound.Wellformed == false)
+                {
+                    /*
+                     * Καπως πρεπει να δειξουμε οτι εχουμε ενα malformed FIX message
+                     */
+                    MetricsProxy.Instance.OnFIXClientWarning();
+                }
+
                 if (m_state.ForceStopInProcess == true)
                 {
                     theLogger.Warning($"OnNewMessage::ForceStopInProcess::THROW_AWAY_MESSAGE {inbound}");
@@ -1258,7 +1266,7 @@ namespace PatioFIX.Common.FixSupport
                      * Θα στειλουμε ολα τα αποθηκευμενα outbound messages απο το beginSeqNo που ζητησε ο server
                      * και οπου βρισκουμε κενα θα στελνουμε Sequence Reset (Gap Filling)
                      */
-                    var source = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, false);
+                    var source = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, false, false, theLogger);
 
                     IList<string> messages = m_state.GetOutbound((int)beginSeqNo, (int)_endSeqNo);
                     theLogger.Info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -1271,7 +1279,7 @@ namespace PatioFIX.Common.FixSupport
                          * To μετατρεπουμε σε bytes και το κανουμε parsing για να παρουμε τα πεδία με τις τιμες τους.
                          */
                         var tbuffer = CharEncoding.DefaultEncoding.GetBytes(message);
-                        source.Parse(tbuffer, 0, tbuffer.Length, theLogger);
+                        source.Parse(tbuffer, 0, tbuffer.Length);
 
 
                         var origMsgType = source[Tags.MsgType].AsString;      //To MessageType του αποθηκευμενου message

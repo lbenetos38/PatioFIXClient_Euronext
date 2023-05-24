@@ -95,7 +95,7 @@ namespace ConsoleApp1
 
                     var tbuffer = CharEncoding.DefaultEncoding.GetBytes(line.Trim());
                     m_inbound.Clear();
-                    m_inbound.Parse(tbuffer, 0, tbuffer.Length, null);
+                    m_inbound.Parse(tbuffer, 0, tbuffer.Length);
 
                     if (m_inbound.Valid)
                     {

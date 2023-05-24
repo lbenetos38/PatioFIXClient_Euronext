@@ -21,6 +21,7 @@ namespace PatioFIX.Common.BLL.Messages
             this.OrigClOrdID = String.Empty;
             this.ClOrdID = String.Empty;
             this.ExecID = default;
+            this.ExecInst = default;
             this.ExecRefID = default;
             this.ExecType = default;
 
@@ -102,6 +103,7 @@ namespace PatioFIX.Common.BLL.Messages
             if (message.Contains(Tags.OrigClOrdID)) this.OrigClOrdID = message[Tags.OrigClOrdID].AsString;
             if (message.Contains(Tags.ClOrdID)) this.ClOrdID = message[Tags.ClOrdID].AsString;
             this.ExecID = message[Tags.ExecID].AsString;
+            if (message.Contains(Tags.ExecInst)) this.ExecInst = message[Tags.ExecInst].AsChar;
             if (message.Contains(Tags.ExecRefID)) this.ExecRefID = message[Tags.ExecRefID].AsString;
             this.ExecType = message[Tags.ExecType].AsChar;
 
@@ -293,6 +295,11 @@ namespace PatioFIX.Common.BLL.Messages
         /// REQUIRED
         /// </summary>
         internal string ExecID;
+        /// <summary>
+        /// (Tag = 18, Type: MultipleCharValue)
+        /// Instructions for order handling on exchange trading floor.
+        /// </summary>
+        protected char ExecInst;
         /// <summary>
         /// ExecRefID (Tag = 19, Type: String)
         /// Reference identifier used with Trade Cancel and Trade Correct execution types.

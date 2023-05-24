@@ -51,7 +51,6 @@ namespace PatioFIX.Common.FixSupport.Transport
         /// 
         /// </summary>
         /// <param name="settings"></param>
-        /// <param name="messageReceiver"></param>
         public TCPConnection(FixConfiguration settings)
         {
             theLogger = new Logger("TCPConnection");
@@ -62,7 +61,7 @@ namespace PatioFIX.Common.FixSupport.Transport
             _rcvBuffer = new byte[settings.MaxRcvBuffer];
             _asmBuffer = new byte[settings.MaxRcvBuffer * 2];
 
-            m_inbound = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, m_settings.ValidateCheckSum, m_settings.ValidateBodyLength);
+            m_inbound = new FIXMessage(m_settings.MaxMessageLength, m_settings.MaxMessageFields, m_settings.ValidateCheckSum, m_settings.ValidateBodyLength, theLogger);
             m_stopEvent = new ManualResetEvent(false);
         }
 
@@ -520,7 +519,7 @@ namespace PatioFIX.Common.FixSupport.Transport
         void _DispatchMessage(byte[] tbuffer, int numOfBytes)
         {
             m_inbound.Clear();
-            m_inbound.Parse(tbuffer, 0, numOfBytes, theLogger);
+            m_inbound.Parse(tbuffer, 0, numOfBytes);
 
             if (m_inbound.Valid == false)
             {

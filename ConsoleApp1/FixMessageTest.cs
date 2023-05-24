@@ -36,17 +36,17 @@ namespace ConsoleApp1
 
             var tbuffer = CharEncoding.DefaultEncoding.GetBytes(f1);
             m_inbound.Clear();
-            m_inbound.Parse(tbuffer, 0, tbuffer.Length, null);
+            m_inbound.Parse(tbuffer, 0, tbuffer.Length);
             var msg1 = new FIXMessage(m_inbound);
 
             tbuffer = CharEncoding.DefaultEncoding.GetBytes(f2);
             m_inbound.Clear();
-            m_inbound.Parse(tbuffer, 0, tbuffer.Length, null);
+            m_inbound.Parse(tbuffer, 0, tbuffer.Length);
             var msg2 = new FIXMessage(m_inbound);
 
             tbuffer = CharEncoding.DefaultEncoding.GetBytes(f3);
             m_inbound.Clear();
-            m_inbound.Parse(tbuffer, 0, tbuffer.Length, null);
+            m_inbound.Parse(tbuffer, 0, tbuffer.Length);
             var msg3 = new FIXMessage(m_inbound);
 
 

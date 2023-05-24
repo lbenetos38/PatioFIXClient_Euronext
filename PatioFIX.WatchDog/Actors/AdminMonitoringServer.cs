@@ -237,6 +237,10 @@ namespace PatioFIX.WatchDog.Actors
             sb.AppendFormat("parsing_warnings {0}\n", metrics.Parsing_Warnings);
             sb.Append("\n");
 
+            sb.Append("# TYPE rejection_warnings counter\n");
+            sb.AppendFormat("rejection_warnings {0}\n", metrics.Rejection_Warnings);
+            sb.Append("\n");
+
 
 
 

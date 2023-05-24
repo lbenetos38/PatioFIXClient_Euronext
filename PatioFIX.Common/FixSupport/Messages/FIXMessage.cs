@@ -14,9 +14,21 @@ namespace PatioFIX.Common.FixSupport
 
         bool m_validateChecksum;
         bool m_validateBodyLength;
+        Logger theLogger = null;
 
         /// <summary> Whether this message contains a valid set of fields </summary>
         public bool Valid { get; private set; }
+        /// <summary>
+        /// A well-formed field has the form:
+        ///         tag=value<SOH>
+        /// 
+        /// Αλλα στο UAT εχουμε λαβει application level tags με EMPTY_VALUE, και αυτο το γεγονος μας εβαλε σε
+        /// ατερμονα βρογχο, και μας κρεμασε ανεπανορθωτα.
+        /// 
+        /// Αρα, μετα απο αυτο, θεωρουμε ενα FIX message VALID και ας περιεχει "καποιο" malformed
+        /// field. Αυτο το κανουμε μονο για Application level fields
+        /// </summary>
+        public bool Wellformed { get; private set; }
         /// <summary>
         /// Προκειται για ενα αντιγραφο ενος FIXMessage, στο οποιο δεν εχουμε την δυνατοτητα να
         /// το αλλαξουμε με καποιο τροπο
@@ -86,15 +98,22 @@ namespace PatioFIX.Common.FixSupport
         public bool IsMessageNote { get; private set; }
         /*
          * Εδω εχουμε μια συντομευση που μας λεει οτι το message που μολις παραλαβαμε
+         * ειναι ενα 35=B^148=M^5577=1 (MessageNote/Warning)
+         */
+        public bool IsRejectionsWarning { get; private set; }
+        /*
+         * Εδω εχουμε μια συντομευση που μας λεει οτι το message που μολις παραλαβαμε
          * ειναι ενα 35=B^148=M^5577=2 (MessageNote/Throttling Parameters)
          */
         public bool IsThrottlingParameters { get; private set; }
         /// <summary>
-        /// 
+        /// TransPerSecond (Tag = 5601)
+        /// Max number of transactions per second permitted for the session
         /// </summary>
         public int TransPerSecond { get; private set; }
         /// <summary>
-        /// 
+        /// OutstandingMsgs (Tag = 5602)
+        /// Max number of unconfirmed transactions
         /// </summary>
         public int OutstandingMsgs { get; private set; }
         #endregion
@@ -107,12 +126,14 @@ namespace PatioFIX.Common.FixSupport
         /// <param name="maxFields">Το μεγιστο πληθος των Fields που μπορει να περιεχει ενα FIXMessage</param>
         /// <param name="validateCheckSum"></param>
         /// <param name="validateBodyLength"></param>
-        public FIXMessage(int maxLength = 2048, int maxFields = 128, bool validateCheckSum = true, bool validateBodyLength = true)
+        /// <param name="logger"></param>
+        public FIXMessage(int maxLength = 2048, int maxFields = 128, bool validateCheckSum = true, bool validateBodyLength = true, Logger logger = null)
         {
             m_rawBytes = new byte[maxLength];
             m_fields = new FIXField[maxFields];
             m_validateChecksum = validateCheckSum;
             m_validateBodyLength = validateBodyLength;
+            theLogger = logger;
         }
 
         /// <summary>
@@ -137,18 +158,20 @@ namespace PatioFIX.Common.FixSupport
             this.ContainsTag52 = source.ContainsTag52;
             this.ContainsTag49 = source.ContainsTag49;
             this.ContainsTag56 = source.ContainsTag56;
+            this.IndexOfTag453 = source.IndexOfTag453;
 
             this.IsMessageNote = source.IsMessageNote;
+            this.IsRejectionsWarning = source.IsRejectionsWarning;
             this.IsThrottlingParameters = source.IsThrottlingParameters;
             this.TransPerSecond = source.TransPerSecond;
             this.OutstandingMsgs = source.OutstandingMsgs;
-            this.IndexOfTag453 = source.IndexOfTag453;
             #endregion
 
             this.m_rawBytes = new byte[source.Length];
             this.m_fields = new FIXField[source.FieldCount];
 
             this.Valid = source.Valid;
+            this.Wellformed = source.Wellformed;
 
             //Αντιγραφουμε το raw bytes
             Buffer.BlockCopy(source.m_rawBytes, 0, this.m_rawBytes, 0, source.Length);
@@ -169,9 +192,8 @@ namespace PatioFIX.Common.FixSupport
         /// <param name="message">The message to parse.</param>
         /// <param name="offset"></param>
         /// <param name="mlength"></param>
-        /// <param name="logger"></param>
         /// <returns>A reference to this instance, built from the parsed message.</returns>
-        public FIXMessage Parse(byte[] message, int offset, int mlength, Logger logger)
+        public FIXMessage Parse(byte[] message, int offset, int mlength)
         {
             if (this.IsLocked)
             {
@@ -194,6 +216,7 @@ namespace PatioFIX.Common.FixSupport
                 this.Length = mlength;
                 this.FieldCount = 0;
                 this.Valid = false;
+                this.Wellformed = true;             //Ξεκιναμε με την παραδοχη ότι το FIX Message που θα διαβασουμε ειναι Wellformed!
                 this.MsgSeqNum = -1;                //REQUIRED FIELD, default value of -1 in purpose! Μην αλλαχτει ποτε.
                                                     //Εαν δεν παρει τιμη απο το incoming mesage, το -1 θα προκαλεσει PtFixFatalException στον FixClient που ειναι το επιθυμητο
                 this.MsgType = "@";                 //REQUIRED FIELD, default value τετοιο ωστε να ειναι unknown MessageType.
@@ -217,8 +240,8 @@ namespace PatioFIX.Common.FixSupport
                 {
                     try
                     {
-                        var field = ParseField(this.m_rawBytes, ref position);
-
+                        var field = ParseField(ref position);
+                        
                         m_fields[FieldCount++] = field;
 
                         length += field.Length;
@@ -272,33 +295,46 @@ namespace PatioFIX.Common.FixSupport
                                 this.IndexOfTag453 = (FieldCount - 1);
                             }
                         }
-                        else if (field.Tag == Tags.Headline)
+
+
+                        if (this.MsgType[0] == 'B' && this.MsgType.Length == 1)
                         {
                             /*
-                             * To tag148 (HeadLine) εμφανιζεται μονο σε messages με MsgType 'B',δηλαδη News.
+                             * Κανουμε parsing ενα fix message τύπου News (MsgType = B)
+                             * 
+                             * Τα παρακατω Tags (Headline, NoteType, TransPerSecond, OutstandingMsgs)
+                             * εμφανιζονται μονο σε τετοιου ειδους μηνύματα
                              */
-                            if (field.AsChar == 'M')
+
+                            if (field.Tag == Tags.Headline)
                             {
-                                this.IsMessageNote = true;
+                                if (field.AsChar == 'M')
+                                {
+                                    this.IsMessageNote = true;
+                                }
                             }
-                        }
-                        else if (field.Tag == CustomTags.NoteType)
-                        {
-                            /*
-                             * To custom tag5577 (NoteType) εμφανιζεται μονο σε messages με MsgType 'B',δηλαδη News.
-                             */
-                            if (field.AsChar == '2')
+                            else if (field.Tag == CustomTags.NoteType)
                             {
-                                this.IsThrottlingParameters = true;
+                                /*
+                                 * To custom tag5577 (NoteType) εμφανιζεται μονο σε messages με MsgType 'B',δηλαδη News.
+                                 */
+                                if (field.AsChar == '1')
+                                {
+                                    this.IsRejectionsWarning = true;
+                                }
+                                else if (field.AsChar == '2')
+                                {
+                                    this.IsThrottlingParameters = true;
+                                }
                             }
-                        }
-                        else if (field.Tag == CustomTags.TransPerSecond)
-                        {
-                            this.TransPerSecond = field.AsInt;
-                        }
-                        else if (field.Tag == CustomTags.OutstandingMsgs)
-                        {
-                            this.OutstandingMsgs = field.AsInt;
+                            else if (field.Tag == CustomTags.TransPerSecond)
+                            {
+                                this.TransPerSecond = field.AsInt;
+                            }
+                            else if (field.Tag == CustomTags.OutstandingMsgs)
+                            {
+                                this.OutstandingMsgs = field.AsInt;
+                            }
                         }
                         #endregion
                     }
@@ -339,7 +375,7 @@ namespace PatioFIX.Common.FixSupport
             {
                 if (_messageParsingFinished)
                 {
-                    logger?.Warning($"Parsing failed: '{e.Message}' [{this.ToString()}]");
+                    theLogger?.Warning($"Parsing failed: '{e.Message}' [{this.ToString()}]");
                 }
                 else
                 {
@@ -352,7 +388,7 @@ namespace PatioFIX.Common.FixSupport
                     }
                     sb.Append("]");
 
-                    logger?.Warning(sb.ToString());
+                    theLogger?.Warning(sb.ToString());
                 }
 
                 Valid = false;
@@ -366,40 +402,38 @@ namespace PatioFIX.Common.FixSupport
         /// Parses a fix field from the message from the provided position. Parsing will fail with an error
         /// if an illegal character is seen whilst parsing the tag or value.
         /// </summary>
-        /// <param name="message">The message to parse.</param>
         /// <param name="position">The position to parse from.</param>
-        /// <returns>The parsed field.</returns>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        FIXField ParseField(byte[] message, ref int position)
+        FIXField ParseField(ref int position)
         {
             var length = 0;
             var checksum = 0;
 
             // Parse next tag and value from the message
-            var tag = ParseTag(message, ref position, ref length, ref checksum);
-            var value = ParseValue(tag, message, ref position, ref length, ref checksum);
+            var tag = ParseTag(ref position, ref length, ref checksum);
+            var value = ParseValue(tag, ref position, ref length, ref checksum);
 
             // Create the relevant field
-            return new FIXField(message, tag, value, length, checksum);
+            return new FIXField(this.m_rawBytes, tag, value, length, checksum);
         }
 
         /// <summary>
         /// Parses a fix tag from the message from the provided position. Parsing will fail with an error
         /// if an illegal character is seen before the tag is terminated.
         /// </summary>
-        /// <param name="message">The message to parse.</param>
         /// <param name="position">The position to parse from.</param>
         /// <param name="length">The current length of the whole field</param>
         /// <param name="checksum">The current checksum of the whole field</param>
         /// <returns>The tag number as an integer.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        int ParseTag(byte[] message, ref int position, ref int length, ref int checksum)
+        int ParseTag(ref int position, ref int length, ref int checksum)
         {
             var tag = 0;
 
             for (; position < Length; position++)
             {
-                var b = message[position];
+                var b = this.m_rawBytes[position];
 
                 length++;
                 checksum += b;
@@ -428,19 +462,18 @@ namespace PatioFIX.Common.FixSupport
         /// if an illegal character is seen before the value is terminated.
         /// </summary>
         /// <param name="tag"></param>
-        /// <param name="message">The message to parse.</param>
         /// <param name="position">The position to parse from.</param>
         /// <param name="length">The current length of the whole field</param>
         /// <param name="checksum">The current checksum of the whole field</param>
         /// <returns>The value as a segment of the original message.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        Segment ParseValue(int tag, byte[] message, ref int position, ref int length, ref int checksum)
+        Segment ParseValue(int tag, ref int position, ref int length, ref int checksum)
         {
             var offset = position;
 
             for (; position < Length; position++)
             {
-                var b = message[position];
+                var b = this.m_rawBytes[position];
 
                 checksum += b;
 
@@ -451,7 +484,18 @@ namespace PatioFIX.Common.FixSupport
             var valueLength = position - offset;
             if (valueLength == 0)
             {
-                throw new Exception($"INVALID_VALUE for tag{tag}");
+                /*
+                 * This field must be considered malformed because its value does not exist
+                 */
+                if(tag == Tags.BeginString || tag == Tags.BodyLength || tag == Tags.MsgType || tag == Tags.SenderCompID || tag == Tags.TargetCompID || tag == Tags.MsgSeqNum || tag == Tags.SendingTime || tag == Tags.CheckSum)
+                {
+                    throw new Exception($"INVALID_VALUE (EMPTY_VALUE) for tag{tag}");
+                }
+                else
+                {
+                    Wellformed = false;
+                    theLogger?.Warning($"INVALID_VALUE (EMPTY_VALUE) for tag{tag}");
+                }
             }
 
             length += valueLength + 1;
@@ -554,6 +598,7 @@ namespace PatioFIX.Common.FixSupport
             FieldCount = 0;
             Length = 0;
             Valid = false;
+            Wellformed = true;
         }
 
         public override string ToString()
