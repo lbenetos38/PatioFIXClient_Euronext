@@ -223,6 +223,12 @@ namespace PatioFIX.Common
         /// OrderID (Tag = 37, Type: String)
         /// </summary>
         public string ExchangeOrderID { get; }
+
+        /// <summary>
+        /// ExecInst (Tag = 18, Type: MultipleCharValue)
+        /// Instructions for order handling on exchange trading floor.
+        /// </summary>
+        public ExecInstEnum ExecInst { get; } = ExecInstEnum.Default;
         #endregion
 
 
@@ -286,6 +292,15 @@ namespace PatioFIX.Common
             this.Side = reader.GetString(41)[0];//char(1)
             if (!reader.IsDBNull(42)) this.OrigClOrdID = reader.GetInt32(42);
             if (!reader.IsDBNull(43)) this.ExchangeOrderID = reader.GetString(43);
+            if (!reader.IsDBNull(44))
+            {
+                var execInst = reader.GetString(44);
+                if (execInst == "S")
+                    this.ExecInst = ExecInstEnum.Suspend;
+                else if(execInst == "q")
+                    this.ExecInst = ExecInstEnum.Unsuspend;
+                //ειδαλλως μενει με την Default τιμη
+            }
 
             if (Int32.TryParse(this.ClientOrderID, out Int32 result))
             {
@@ -446,7 +461,6 @@ namespace PatioFIX.Common
 
             writer.Set(Tags.Text, this.ChangedOrderNote.Trim());
 
-            writer.Set(Tags.OrderQty, this.ChangedVolume);
             if (this.ChangedPositionEffect == ' ' || this.ChangedPositionEffect == 'O')
             {
                 writer.Set(Tags.PositionEffect, 'O');
@@ -473,7 +487,37 @@ namespace PatioFIX.Common
                 throw new Exception($"Unknown SettlType '{this.ChangedSettlType}'");
             }
 
-            writer.Set(Tags.MaxShow, this.ChangedDisclosedVolume);
+
+
+            #region OrderQty, MaxShow, ExecInst
+            if (this.ExecInst == ExecInstEnum.Suspend)
+            {
+                /*
+                 * Εχουμε απενεργοποιηση εντολης
+                 */
+                writer.Set(Tags.OrderQty, this.ChangedVolume);
+                writer.Set(Tags.MaxShow, this.ChangedDisclosedVolume);
+                writer.Set(Tags.ExecInst, "S");
+            }
+            else if(this.ExecInst == ExecInstEnum.Unsuspend)
+            {
+                /*
+                 * Εχουμε ενεργοποιηση εντολης
+                 */
+                writer.Set(Tags.OrderQty, this.ChangedVolume);
+                writer.Set(Tags.MaxShow, this.ChangedDisclosedVolume);
+                writer.Set(Tags.ExecInst, "q");
+            }
+            else
+            {
+                /*
+                 * Εχουμε αλλαγη σε ιδιοτητες της εντολης
+                 */
+                writer.Set(Tags.OrderQty, this.ChangedVolume);
+                writer.Set(Tags.MaxShow, this.ChangedDisclosedVolume);
+            }
+            #endregion
+
 
             if (this.Side == 'S')
             {

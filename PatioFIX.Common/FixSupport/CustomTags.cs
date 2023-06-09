@@ -27,7 +27,13 @@
         public const int ExchangeID = 5603;
 
 
-
+        /// <summary>
+        /// A 1 character alphanumeric type indicating the source of the Orde
+        /// C               CTCI –API / ATHEX FIX Serve
+        /// M               ORAMA
+        /// R               MRW (ATHEX supervision application)
+        /// [space]         OASIS
+        /// </summary>
         public const int OrigSource = 5501;
         public const int OrderRelFlag = 5509;
         public const int OrderRefID = 5510;
