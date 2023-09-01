@@ -111,20 +111,28 @@ namespace PatioFIX.Common.BLL.Messages
 
         public static char GetOrderOrigination(FIXMessage message, Logger logger)
         {
-            var _orderOrigination = message[CustomTags.OrderOrigination].AsChar;
+            if (message.Contains(CustomTags.OrderOrigination))
+            {
+                var _orderOrigination = message[CustomTags.OrderOrigination].AsChar;
 
-            if (_orderOrigination == '0')
-            {   //Order is not submitted using Direct Electronic Access (DEA)
-                return '0';
-            }
-            else if (_orderOrigination == '5')
-            {   //Order is submitted using Direct Electronic Access (DEA)
-                return '1';
+                if (_orderOrigination == '0')
+                {   //Order is NOT submitted using Direct Electronic Access (DEA)
+                    return '0';
+                }
+                else if (_orderOrigination == '5')
+                {   //Order is submitted using Direct Electronic Access (DEA)
+                    return '1';
+                }
+                else
+                {
+                    MetricsProxy.Instance.OnParsingError();
+                    throw new PtFixException($"tag1724 (OrderOrigination) has UNSUPPORTED_VALUE of '{_orderOrigination}'");
+                }
             }
             else
             {
-                MetricsProxy.Instance.OnParsingError();
-                throw new PtFixException($"tag1724 (OrderOrigination) has UNSUPPORTED_VALUE of '{_orderOrigination}'");
+				//Absence of this field is interpreted as “order is not submitted using Direct Electronic Access (DEA)”.
+				return '0';
             }
         }
 

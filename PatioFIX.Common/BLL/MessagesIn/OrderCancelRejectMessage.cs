@@ -49,17 +49,17 @@ namespace PatioFIX.Common.BLL.Messages
                 CxlRejReason = message[Tags.CxlRejReason].AsInt;
             if (message.Contains(Tags.Text)) this.RejectReason = message[Tags.Text].AsString;
 
-            if (message.Contains(Tags.TransactTime))
-                Timestamp = message[Tags.TransactTime].AsODLTimestamp;
-            else
-                Timestamp = message[Tags.SendingTime].AsODLTimestamp;
-
-
-
             if (message.Contains(CustomTags.RejectReasonCode))
                 RejectReasonCode = message[CustomTags.RejectReasonCode].AsString;
             if (message.Contains(Tags.SecurityExchange))
                 SecurityExchange = message[Tags.SecurityExchange].AsString;
+
+
+
+			if (message.Contains(Tags.TransactTime))
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.TransactTime].AsODLTimestampLocal : message[Tags.TransactTime].AsODLTimestamp;
+			else
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.SendingTime].AsODLTimestampLocal : message[Tags.SendingTime].AsODLTimestamp;
 
 
             return this;

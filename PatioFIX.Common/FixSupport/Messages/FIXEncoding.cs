@@ -348,7 +348,95 @@ namespace PatioFIX.Common.FixSupport
             return s;
         }
 
-        /*
+
+		/// <summary>
+		/// Παιρνει το FIX timestamp και επιστρεφει πισω ενα μήκους 20 χαρακτηρων ODL Timestamp (YYYYMMDDhhmmssdddddd)
+		/// (Η διαφορα της απο την ReadODLTimestamp() ειναι οτι μετατρεπει την ωρα σε 'Greek Local Time'. Η μετατροπη αυτη
+        /// ειναι ΜΟΝΟ ΜΕΡΙΚΑ ΣΩΣΤΗ, αλλα μας κανει 100% για το ATHEX που η συνδριες του ειναι μεσα σε μια ημερα απο τις 10 το πρωι
+        /// μεχρι και τις 6 το απογευμα).
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="offset"></param>
+		/// <param name="count"></param>
+		/// <param name="forTag"></param>
+		/// <param name="_utcOffset"></param>
+		/// <returns></returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static unsafe string ReadODLTimestampLocal(this byte[] source, int offset, int count, int forTag, int _utcOffset)
+		{
+			char* chars = stackalloc char[20 + 1];
+
+			int idx = 0;
+			for (var i = 0; i < count; i++)
+			{
+				char _b = (char)source[offset + i];
+
+				if (_b != '-' && _b != ':' && _b != '.')
+				{
+					*(chars + idx) = _b;
+					idx++;
+
+					if (idx >= 20)
+						break;
+				}
+			}
+
+			chars[idx] = '\0';
+
+			/*
+			 * Τωρα θα διορθωσουμε την UTC τιμη σε τρεχουσα 'Greek Standard time' 
+			 * H ωρα (hh) μεσα στο πινακα chars βρισκεται στις θεσεις chars[8] και chars[9]
+			 *                  01234567890123456789
+			 *                  YYYYMMDDhhmmssdddddd
+			 *                  20230222094212638000
+			 *                  ........^^..........
+			 *                  
+			 *                  
+			 * ΔΕΝ ΕΙΝΑΙ 100% ΣΩΣΤΟ!!! 
+			 * Παιζει ομως γιατι η συνεδρια του ATHEX ειναι μεταξυ 10:00 και 17:20 ωρα Ελλαδος.
+			 * Ειδαλλως θα επρεπε να κοιταμε εαν η διορθωση της ωρας προκαλει shift στην ημερα, μηνα και το ετος
+			 * Το αφηνουμε ετσι (μερικα σωστο) για performance λογους
+			 */
+			int hour = (chars[8] - 48);
+			hour = 10 * hour + (chars[9] - 48);
+			int new_hour = hour + _utcOffset;
+
+			if (new_hour == 1) { chars[8] = '0'; chars[9] = '1'; }
+			else if (new_hour == 2) { chars[8] = '0'; chars[9] = '2'; }
+			else if (new_hour == 3) { chars[8] = '0'; chars[9] = '3'; }
+			else if (new_hour == 4) { chars[8] = '0'; chars[9] = '4'; }
+			else if (new_hour == 5) { chars[8] = '0'; chars[9] = '5'; }
+			else if (new_hour == 6) { chars[8] = '0'; chars[9] = '6'; }
+			else if (new_hour == 7) { chars[8] = '0'; chars[9] = '7'; }
+			else if (new_hour == 8) { chars[8] = '0'; chars[9] = '8'; }
+			else if (new_hour == 9) { chars[8] = '0'; chars[9] = '9'; }
+			else if (new_hour == 10) { chars[8] = '1'; chars[9] = '0'; }
+			else if (new_hour == 11) { chars[8] = '1'; chars[9] = '1'; }
+			else if (new_hour == 12) { chars[8] = '1'; chars[9] = '2'; }
+			else if (new_hour == 13) { chars[8] = '1'; chars[9] = '3'; }
+			else if (new_hour == 14) { chars[8] = '1'; chars[9] = '4'; }
+			else if (new_hour == 15) { chars[8] = '1'; chars[9] = '5'; }
+			else if (new_hour == 16) { chars[8] = '1'; chars[9] = '6'; }
+			else if (new_hour == 17) { chars[8] = '1'; chars[9] = '7'; }
+			else if (new_hour == 18) { chars[8] = '1'; chars[9] = '8'; }
+			else if (new_hour == 19) { chars[8] = '1'; chars[9] = '9'; }
+			else if (new_hour == 20) { chars[8] = '2'; chars[9] = '0'; }
+			else if (new_hour == 21) { chars[8] = '2'; chars[9] = '1'; }
+			else if (new_hour == 22) { chars[8] = '2'; chars[9] = '2'; }
+			else if (new_hour == 23) { chars[8] = '2'; chars[9] = '3'; }
+			else if (new_hour == 24) { chars[8] = '0'; chars[9] = '0'; }
+			else if (new_hour == 25) { chars[8] = '0'; chars[9] = '1'; }
+			else if (new_hour == 26) { chars[8] = '0'; chars[9] = '2'; }
+			else if (new_hour == 27) { chars[8] = '0'; chars[9] = '3'; }
+
+
+
+			var s = new string(chars);
+
+			return s;
+		}
+
+		/*
          * Notes:
          * 
          * There are a few ways of converting numbers to bytes, including:

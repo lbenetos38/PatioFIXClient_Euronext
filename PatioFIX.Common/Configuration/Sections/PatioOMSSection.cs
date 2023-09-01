@@ -16,7 +16,7 @@ namespace PatioFIX.Common.Configuration
         /// <summary>
         /// 
         /// </summary>
-        public bool DisableDataLayer { get; } = true;
+        public bool DisableDataLayer { get; } = false;
         /// <summary>
         /// 
         /// </summary>
@@ -25,16 +25,20 @@ namespace PatioFIX.Common.Configuration
         /// 
         /// </summary>
         public string TargetConnection { get; }
+		/// <summary>
+		/// Μετατρεπει τα πεδια τύπου UTCTimestamp/UTCTimeOnly σε Greek Standard (Local) Time
+		/// </summary>
+		public bool ConvertUTCTimeToLocal { get; } = true;
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="root"></param>
-        /// <param name="required"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        internal PatioOMSSection(IConfigurationSection root, bool required = true)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="root"></param>
+		/// <param name="required"></param>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="ArgumentException"></exception>
+		internal PatioOMSSection(IConfigurationSection root, bool required = true)
         {
             var section = root.GetSection(this.SectionName);
             if (section.Exists())
@@ -75,7 +79,18 @@ namespace PatioFIX.Common.Configuration
                     this.TargetConnection = value.ToUpperInvariant();
                 }
 
-            }
+
+				value = section["ConvertUTCTimeToLocal"];
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					this.ConvertUTCTimeToLocal = true;
+				}
+				else
+				{
+					this.ConvertUTCTimeToLocal = Convert.ToBoolean(value);
+				}
+
+			}
             else
             {
                 if (required)
@@ -102,7 +117,8 @@ namespace PatioFIX.Common.Configuration
                 theLogger.Info("PatioOMS::\t\t\tENABLED");
                 theLogger.Info($"PatioOMS::ODLConnStr = {this.ODLConnStr}");
                 theLogger.Info($"PatioOMS::TargetConnection = {this.TargetConnection}");
-            }
+				theLogger.Info($"PatioOMS::ConvertUTCTimeToLocal = {this.ConvertUTCTimeToLocal}");
+			}
         }
     }
 }

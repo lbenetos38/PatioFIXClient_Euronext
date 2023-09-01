@@ -37,17 +37,17 @@ namespace PatioFIX.Common.BLL.Messages
             HaltReasonCode = message[CustomTags.ΑΤΗΕΧHaltReason].AsString;  //REQUIRED
             MarketID = message[CustomTags.MarketID].AsChar;                 //REQUIRED
 
-            if (message.Contains(Tags.TransactTime))
-                Timestamp = message[Tags.TransactTime].AsODLTimestamp;
-            else
-                Timestamp = message[Tags.SendingTime].AsODLTimestamp;
-
-
             if (HaltReasonCode != "00")
             {
                 HaltStartTime = this.Timestamp.Substring(8, 12);
             }
 
+
+
+			if (message.Contains(Tags.TransactTime))
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.TransactTime].AsODLTimestampLocal : message[Tags.TransactTime].AsODLTimestamp;
+			else
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.SendingTime].AsODLTimestampLocal : message[Tags.SendingTime].AsODLTimestamp;
 
 
             return this;

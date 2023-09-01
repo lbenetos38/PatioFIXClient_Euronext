@@ -55,14 +55,14 @@ namespace PatioFIX.Common.BLL.Messages
             ChangedDirectElectronicAccess = ParsingHelpers.GetOrderOrigination(message, logger);
 
 
-            if (message.Contains(Tags.TransactTime))
-                Timestamp = message[Tags.TransactTime].AsODLTimestamp;
-            else
-                Timestamp = message[Tags.SendingTime].AsODLTimestamp;
+			if (message.Contains(Tags.TransactTime))
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.TransactTime].AsODLTimestampLocal : message[Tags.TransactTime].AsODLTimestamp;
+			else
+				Timestamp = Globals.PatioOMS.ConvertUTCTimeToLocal ? message[Tags.SendingTime].AsODLTimestampLocal : message[Tags.SendingTime].AsODLTimestamp;
 
 
-            return this;
-        }
+			return this;
+		}
 
 
 

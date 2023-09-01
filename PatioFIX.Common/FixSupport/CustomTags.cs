@@ -45,7 +45,10 @@
         public const int CurrentCreditValue = 5545;
         public const int MBListID = 5561;
         public const int CancelReasonCode = 5508;
-        public const int OrderOrigination = 1724;
+		/// <summary>
+		/// Indicates order origination
+		/// </summary>
+		public const int OrderOrigination = 1724;
 
         public const int NoOrderAttributes = 2593;
         public const int OrderAttributeType = 2594;

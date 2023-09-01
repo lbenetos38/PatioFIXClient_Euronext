@@ -39,6 +39,12 @@ namespace PatioFIX.Common.FixSupport
         /// </summary>
         public string AsODLTimestamp => _message.ReadODLTimestamp(_value.Offset, _value.Length, Tag);
 
+
+		/// <summary>
+		/// Παιρνει το FIX timestamp και επιστρεφει πισω ενα μήκους 20 χαρακτηρων ODL Timestamp
+		/// </summary>
+		public string AsODLTimestampLocal => _message.ReadODLTimestampLocal(_value.Offset, _value.Length, Tag, Globals.UTCOffset);
+
         /// <summary>
         /// 
         /// </summary>

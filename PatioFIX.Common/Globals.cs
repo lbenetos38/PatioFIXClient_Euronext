@@ -15,6 +15,7 @@ namespace PatioFIX.Common
         public static IMonitor GuiMonitorInstance;
         public static int DayOfYear;
         public static SimpleSchedule Schedule = new();
+        public static int UTCOffset = GreeceTimeHelper.UTC_OFFSET;
 
 
 
@@ -97,8 +98,10 @@ namespace PatioFIX.Common
         }
         public static void SetDayOfYear()
         {
-            Interlocked.Exchange(ref DayOfYear, DateTime.Now.DayOfYear);
-        }
+            DateTime _now = DateTime.Now;
+            Interlocked.Exchange(ref DayOfYear, _now.DayOfYear);
+			Interlocked.Exchange(ref UTCOffset, GreeceTimeHelper.GetUTCOffset(_now.Year, _now.Month, _now.Day));
+		}
 
         public static string UnWindException(Exception ex)
         {
