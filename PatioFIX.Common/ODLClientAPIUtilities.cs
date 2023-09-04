@@ -70,13 +70,15 @@ namespace PatioFIX.Common
             return new string(buffer, 0, bidx);
         }
 
-        /// <summary>
-        /// Αφαιρει απο το value ολους τους χαρακτηρες που δεν ειναι νουμερα.
-        /// Εαν δεν μεινει καποιος χαρακτηρας στο value τοτε επιστρεφει "0"
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static unsafe string _FilterOutNonNumericCharacters(string value)
+		/// <summary>
+		/// Αφαιρει απο το value ολους τους χαρακτηρες που δεν ειναι νουμερα.
+		/// Εαν δεν μεινει καποιος χαρακτηρας στο value τοτε επιστρεφει "0"
+		/// <para>Χρησιμοποιειται για να βεβαιωθουμε οτι το CSDAccountID περιεχει μονο αριθμους οταν το αποθηκευσουμε στην βαση (ODL).
+        /// Εδω ειναι το σημειο που accounts οπως 'MMCL', 'FTSPOT','PPCMMCL','ERR_EB1_EB1' κ.α. μετατρεπονται σε "0" </para>
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static unsafe string _FilterOutNonNumericCharacters(string value)
         {
             if (value == null)
                 return "0";
