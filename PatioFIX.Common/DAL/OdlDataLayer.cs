@@ -53,7 +53,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@cfcTraderID", _trim(confirmation.TraderID), SqlDbType.Char);
             AddParameter(command, "@cfcBoardID", confirmation.BoardID, SqlDbType.Char);
             AddParameter(command, "@clOrdID", _RemoveSpecialCharacters(confirmation.ClOrdID), SqlDbType.Char);
-            AddParameter(command, "@cfcCSDAccountID", _ReturnPureField(confirmation.CSDAccountID), SqlDbType.Char);
+            AddParameter(command, "@cfcCSDAccountID", _FilterOutNonNumericCharacters(confirmation.CSDAccountID), SqlDbType.Char);
             AddParameter(command, "@cfcOrderNumber", confirmation.OrderNumber, SqlDbType.Char);
             AddParameter(command, "@cfcEntryDate", confirmation.OrderDate, SqlDbType.Char);
             AddParameter(command, "@cfcSource", confirmation.CancelSource, SqlDbType.Char);
@@ -108,7 +108,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@p10", confirmation.ChangedVolume, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p11", confirmation.ChangedDisclosedVolume, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p12", confirmation.ChangedAutoDisclosedVolume, ParameterDirection.Input, 18, 0);
-            AddParameter(command, "@p13", _ReturnPureField(confirmation.ChangedCSDAccountID), SqlDbType.Char);
+            AddParameter(command, "@p13", _FilterOutNonNumericCharacters(confirmation.ChangedCSDAccountID), SqlDbType.Char);
             AddParameter(command, "@p14", confirmation.ChangedOriginalPriceType, SqlDbType.Char);
             AddParameter(command, "@p15", confirmation.ChangedLife, SqlDbType.Char);
             AddParameter(command, "@p16", confirmation.ChangedExpirationDate, SqlDbType.Char);
@@ -175,7 +175,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@OrderType", confirmOrder.OrderType, SqlDbType.Char);
             AddParameter(command, "@BoardID", confirmOrder.BoardID, SqlDbType.Char);
             AddParameter(command, "@Side", confirmOrder.Side, SqlDbType.Char);
-            AddParameter(command, "@CSDAccountID", _ReturnPureField(confirmOrder.CSDAccountID), SqlDbType.Char);
+            AddParameter(command, "@CSDAccountID", _FilterOutNonNumericCharacters(confirmOrder.CSDAccountID), SqlDbType.Char);
             AddParameter(command, "@ClientFlag", confirmOrder.OrderSource, SqlDbType.Char);
             AddParameter(command, "@Price", confirmOrder.Price, SqlDbType.Decimal);
             AddParameter(command, "@Volume", confirmOrder.Volume, SqlDbType.Decimal);
@@ -252,7 +252,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@cfcTraderID", _trim(confirmation.TraderID), SqlDbType.Char);
             AddParameter(command, "@cfcBoardID", confirmation.BoardID, SqlDbType.Char);
             AddParameter(command, "@clOrdID", _RemoveSpecialCharacters(confirmation.ClOrdID), SqlDbType.Char);
-            AddParameter(command, "@cfcCSDAccountID", _ReturnPureField(confirmation.CSDAccountID), SqlDbType.Char);
+            AddParameter(command, "@cfcCSDAccountID", _FilterOutNonNumericCharacters(confirmation.CSDAccountID), SqlDbType.Char);
             AddParameter(command, "@cfcOrderNumber", confirmation.OrderNumber, SqlDbType.Char);
             AddParameter(command, "@cfcEntryDate", confirmation.OrderDate, SqlDbType.Char);
             AddParameter(command, "@cfcSource", confirmation.CancelSource, SqlDbType.Char);
@@ -542,23 +542,23 @@ namespace PatioFIX.Common.DAL
 
             var command = CreateCommandForProc("dbo.fxodl_trades_Create");
             AddParameter(command, "@p02", "", SqlDbType.Char, ParameterDirection.Input, 4);
-            AddParameter(command, "@p04", _trim(newTradeConfirmation.MemberID), SqlDbType.Char, ParameterDirection.Input, 4);
-            AddParameter(command, "@p05", _trim(newTradeConfirmation.TraderID), SqlDbType.Char, ParameterDirection.Input, 5);
+            AddParameter(command, "@p04", newTradeConfirmation.MemberID, SqlDbType.Char, ParameterDirection.Input, 4);
+            AddParameter(command, "@p05", newTradeConfirmation.TraderID, SqlDbType.Char, ParameterDirection.Input, 5);
             AddParameter(command, "@p07", newTradeConfirmation.BoardID, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@p08", _trim(_RemoveSpecialCharacters(newTradeConfirmation.ClientOrderID)), SqlDbType.Char, ParameterDirection.Input, 16);
-            AddParameter(command, "@p09", _ReturnPureField(newTradeConfirmation.CSDAccountID), SqlDbType.Char, ParameterDirection.Input, 12);
-            AddParameter(command, "@p10", _trim(newTradeConfirmation.ClearingMemberID), SqlDbType.Char, ParameterDirection.Input, 4);
+            AddParameter(command, "@p09", _FilterOutNonNumericCharacters(newTradeConfirmation.CSDAccountID), SqlDbType.Char, ParameterDirection.Input, 12);
+            AddParameter(command, "@p10", newTradeConfirmation.ClearingMemberID, SqlDbType.Char, ParameterDirection.Input, 4);
             AddParameter(command, "@OrderSource", newTradeConfirmation.OrderSource, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@ODLOrderStatus", newTradeConfirmation.ODLOrderStatus, SqlDbType.Char);
             AddParameter(command, "@FIXOrderStatus", newTradeConfirmation.FixOrderStatus, SqlDbType.Char);
-            AddParameter(command, "@p12", _trim(newTradeConfirmation.OrderNumber), SqlDbType.Char, ParameterDirection.Input, 8);
-            AddParameter(command, "@p13", _trim(newTradeConfirmation.OrderDate), SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@p12", newTradeConfirmation.OrderNumber, SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@p13", newTradeConfirmation.OrderDate, SqlDbType.Char, ParameterDirection.Input, 8);
             AddParameter(command, "@Side", newTradeConfirmation.Side, SqlDbType.Char, ParameterDirection.Input, 1);
             AddDecimalParameter(command, "@p15", newTradeConfirmation.Volume, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p16", newTradeConfirmation.Price, ParameterDirection.Input, 18, 6);
-            AddParameter(command, "@p17", _trim(newTradeConfirmation.ContraMemberID), SqlDbType.Char, ParameterDirection.Input, 4);
-            AddParameter(command, "@p18", _trim(newTradeConfirmation.TradeNumber), SqlDbType.Char, ParameterDirection.Input, 6);
-            AddParameter(command, "@p19", _trim(_substring(newTradeConfirmation.Timestamp, 8, 8)), SqlDbType.Char, ParameterDirection.Input, 8);
+            AddParameter(command, "@p17", newTradeConfirmation.ContraMemberID, SqlDbType.Char, ParameterDirection.Input, 4);
+            AddParameter(command, "@p18", newTradeConfirmation.TradeNumber, SqlDbType.Char, ParameterDirection.Input, 6);
+            AddParameter(command, "@p19", _substring(newTradeConfirmation.Timestamp, 8, 8), SqlDbType.Char, ParameterDirection.Input, 8);
             AddParameter(command, "@p20", newTradeConfirmation.TradeSource, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@PhaseID", newTradeConfirmation.PhaseID, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@p22", newTradeConfirmation.SecurityStatus, SqlDbType.Char, ParameterDirection.Input, 1);
@@ -568,7 +568,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@p26", newTradeConfirmation.LeavesQuantity, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p27", newTradeConfirmation.AveragePrice, ParameterDirection.Input, 18, 6);
             AddDecimalParameter(command, "@p28", newTradeConfirmation.CurrentCreditValue, ParameterDirection.Input, 18, 2);
-            AddParameter(command, "@p29", _trim(newTradeConfirmation.ListID), SqlDbType.Char, ParameterDirection.Input, 6);
+            AddParameter(command, "@p29", newTradeConfirmation.ListID, SqlDbType.Char, ParameterDirection.Input, 6);
             AddParameter(command, "@OrderRelFlag", newTradeConfirmation.OrderRelFlag, SqlDbType.Char, ParameterDirection.Input, 1);
 
 
@@ -578,10 +578,10 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@p34", newTradeConfirmation.SettlType, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@p35", _trim(newTradeConfirmation.ExpirationDate), SqlDbType.Char, ParameterDirection.Input, 8);
             AddParameter(command, "@p36", _trim(newTradeConfirmation.TradeStatus), SqlDbType.Char, ParameterDirection.Input, 1);
-            AddParameter(command, "@SecurityID", _trim(newTradeConfirmation.SecurityID), SqlDbType.NVarChar, ParameterDirection.Input, 20);
+            AddParameter(command, "@SecurityID", newTradeConfirmation.SecurityID, SqlDbType.NVarChar, ParameterDirection.Input, 20);
             AddParameter(command, "@p38", newTradeConfirmation.SecurityIDSource, SqlDbType.Char, ParameterDirection.Input, 1);
-            AddParameter(command, "@p39", _trim(newTradeConfirmation.Currency), SqlDbType.Char, ParameterDirection.Input, 3);
-            AddParameter(command, "@p40", _trim(newTradeConfirmation.ContraTraderID), SqlDbType.Char, ParameterDirection.Input, 5);
+            AddParameter(command, "@p39", newTradeConfirmation.Currency, SqlDbType.Char, ParameterDirection.Input, 3);
+            AddParameter(command, "@p40", newTradeConfirmation.ContraTraderID, SqlDbType.Char, ParameterDirection.Input, 5);
 
             AddParameter(command, "@OrderRefID", newTradeConfirmation.OrderRefID, SqlDbType.Char, ParameterDirection.Input, 16);
 
@@ -598,7 +598,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@p52", newTradeConfirmation.NonExecutingBrokerID, ParameterDirection.Input, 18, 0);
             AddParameter(command, "@p53", newTradeConfirmation.TradingCapacity, SqlDbType.Char, ParameterDirection.Input, 1);
             AddParameter(command, "@p54", newTradeConfirmation.LiquidityProvision, SqlDbType.Char, ParameterDirection.Input, 1);
-            AddParameter(command, "@p55", _trim(newTradeConfirmation.WaiverIndicator), SqlDbType.Int);
+            AddParameter(command, "@p55", newTradeConfirmation.WaiverIndicator, SqlDbType.Int);
             AddDecimalParameter(command, "@p56", newTradeConfirmation.BestBidPrice, ParameterDirection.Input, 18, 4);
             AddDecimalParameter(command, "@p57", newTradeConfirmation.BestBidQuantity, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@BestOfferPrice", newTradeConfirmation.BestOfferPrice, ParameterDirection.Input, 18, 4);
@@ -630,7 +630,7 @@ namespace PatioFIX.Common.DAL
         {
             if (tradeCaptureReport == null) throw new ArgumentNullException(nameof(tradeCaptureReport));
 
-            var command = CreateCommandForProc("dbo.fxodl_tradecapturereports_Create");
+            var command = CreateCommandForProc("dbo.fxodl_tradecapturereports_Create2");
 
             AddParameter(command, "@TrdMatchID", tradeCaptureReport.TrdMatchID, SqlDbType.Char, ParameterDirection.Input, 6);//TradeNumber
             AddParameter(command, "@TradeReportID", tradeCaptureReport.TradeReportID, SqlDbType.Char, ParameterDirection.Input, 16);//ClientOrderID
@@ -643,7 +643,7 @@ namespace PatioFIX.Common.DAL
 
             AddParameter(command, "@BoardID", tradeCaptureReport.BoardID, SqlDbType.Char, ParameterDirection.Input, 1);//BoardID
 
-            AddParameter(command, "@SecurityID", _trim(tradeCaptureReport.SecurityID), SqlDbType.NVarChar, ParameterDirection.Input, 20);//SecurityID
+            AddParameter(command, "@SecurityID", tradeCaptureReport.SecurityID, SqlDbType.NVarChar, ParameterDirection.Input, 20);//SecurityID
             AddParameter(command, "@SecurityIDSource", tradeCaptureReport.SecurityIDSource, SqlDbType.Char, ParameterDirection.Input, 1);//SecurityIDSource
             AddParameter(command, "@VenueId", _trim(tradeCaptureReport.SecurityExchange), SqlDbType.Char, ParameterDirection.Input, 4);//VenueID
             AddDecimalParameter(command, "@LastQty", tradeCaptureReport.LastQty, ParameterDirection.Input, 18, 0);//Volume
@@ -656,8 +656,10 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@NoSides", (int)tradeCaptureReport.NoSides, SqlDbType.Int);
 
             /*OurSide*/
-            AddParameter(command, "@Account", tradeCaptureReport.OurSide.Account, SqlDbType.Char, ParameterDirection.Input, 12);//CSDAccountID
-            AddParameter(command, "@EnteringTraderID", tradeCaptureReport.OurSide.EnteringTraderID, SqlDbType.Char, ParameterDirection.Input, 5);//TraderID
+            AddParameter(command, "@CSDAccountID", _FilterOutNonNumericCharacters(tradeCaptureReport.OurSide.Account), SqlDbType.Char, ParameterDirection.Input, 12);//CSDAccountID
+			AddParameter(command, "@OriCSDAccountID", tradeCaptureReport.OurSide.Account, SqlDbType.Char, ParameterDirection.Input, 12);//OriCSDAccountID
+
+			AddParameter(command, "@EnteringTraderID", tradeCaptureReport.OurSide.EnteringTraderID, SqlDbType.Char, ParameterDirection.Input, 5);//TraderID
             AddParameter(command, "@ExecutingFirmID", tradeCaptureReport.OurSide.ExecutingFirmID, SqlDbType.Char, ParameterDirection.Input, 4);//MemberID
             AddParameter(command, "@ClearingFirmID", tradeCaptureReport.OurSide.ClearingFirmID, SqlDbType.Char, ParameterDirection.Input, 4);//ClearingMemberID
             AddDecimalParameter(command, "@ClientID", tradeCaptureReport.OurSide.ClientID, ParameterDirection.Input, 18, 0);//ClientID

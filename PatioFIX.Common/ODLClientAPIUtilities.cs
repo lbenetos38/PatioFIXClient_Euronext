@@ -10,6 +10,11 @@ namespace PatioFIX.Common
     public static class ODLClientAPIUtilities
     {
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static string _trim(string value)
         {
             if (value == null)
@@ -17,6 +22,13 @@ namespace PatioFIX.Common
             return value.Trim();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="start"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static string _substring(string value, int start, int length)
         {
             if (value == null || start > value.Length - 1)
@@ -30,70 +42,63 @@ namespace PatioFIX.Common
             return value.Substring(start, length);
         }
 
-        //public static string _substring(string value, int start, int length)
-        //{
-        //    if (value == null || start > value.Length - 1)
-        //        return String.Empty;
 
-        //    if (start + length > value.Length)
-        //    {
-        //        length = value.Length - start;
-        //    }
-
-        //    char[] buffer = new char[length];
-        //    for (int i = 0; i < length; i++)
-        //    {
-        //        buffer[i] = value[start + i];
-        //    }
-
-        //    return new string(buffer);
-        //}
-
-        public static string _RemoveSpecialCharacters(string input)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static unsafe string _RemoveSpecialCharacters(string value)
         {
-            if (input == null)
-                return input;
-            input = input.Trim();
+            if (value == null)
+                return value;
+            value = value.Trim();
 
-            var buffer = new char[input.Length];
+            var buffer = stackalloc char[value.Length];
             int bidx = 0, idx = 0;
-            for (; idx < input.Length; idx++)
+            for (; idx < value.Length; idx++)
             {
-                char c = input[idx];
+                char c = value[idx];
                 if (c == ',' || c == '"' || c == '\'')
                     continue;
                 buffer[bidx++] = c;
             }
 
             if (bidx == idx)
-                return input;
+                return value;
 
             return new string(buffer, 0, bidx);
         }
-        public static string _ReturnPureField(string input)
+
+        /// <summary>
+        /// Αφαιρει απο το value ολους τους χαρακτηρες που δεν ειναι νουμερα.
+        /// Εαν δεν μεινει καποιος χαρακτηρας στο value τοτε επιστρεφει "0"
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static unsafe string _FilterOutNonNumericCharacters(string value)
         {
-            if (input == null)
+            if (value == null)
                 return "0";
 
-            var buffer = new char[input.Length];
+            var buffer = stackalloc char[value.Length];
             int bidx = 0, idx = 0;
-            for (; idx < input.Length; idx++)
+            for (; idx < value.Length; idx++)
             {
-                char c = input[idx];
-                if (Char.IsDigit(c))
-                    buffer[bidx++] = c;
-            }
+                char c = value[idx];
+				if (Char.IsBetween(c, '0', '9'))
+					buffer[bidx++] = c;
+			}
 
             if (bidx == 0)
                 return "0";
             if (bidx == idx)
-                return input;
+                return value;
 
             return new string(buffer, 0, bidx);
         }
 
 
-        #region format functions for message field types
 
         /// <summary>
         /// The alpha fields have to be aligned to the left and padded with spaces. For example, 
@@ -101,33 +106,36 @@ namespace PatioFIX.Common
         /// alpha having a total width of 12 bytes. If the desired value of this field is XYZ, then we fill the 
         /// field (left to right) with XYZ and then continue appending nine (9) spaces.
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="value"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        public static string _FormatAlphaField(string input, int size)
+        public static unsafe string _FormatAlphaField(string value, int size)
         {
-            var buffer = new char[size];
+            //Δεσμευουμε απο το stack χωρο για να φτιαξουμε το νεο string
+			var buffer = stackalloc char[size + 1];
 
-            //fill buffer with zeroes...
-            for (int idx = 0; idx < buffer.Length; idx++)
-                buffer[idx] = ' ';
+			//fill buffer with spaces...
+			for (int i = 0; i < size; i++)
+				buffer[i] = ' ';
+			buffer[size] = '\0';
 
+			if (value is null || value.Length == 0)
+				return new string(buffer);
 
-            if (String.IsNullOrWhiteSpace(input))
-                return new string(buffer);
+			//Προσπερναμε στο value (τυχων) αρχικα spaces (trimming)...
+			int idx = 0;
+			while (idx < value.Length && value[idx] == ' ') idx++;
+			//Αντιγραφουμε απο το value (γραμμα γραμμα) στο buffer
+			for (int _bfi = 0; _bfi < size; idx++, _bfi++)
+			{
+				if (idx >= value.Length)
+					break;
 
-            input = input.Trim();
-            for (int idx = 0; idx < buffer.Length; idx++)
-            {
-                if (idx > (input.Length - 1))
-                    break;
+				buffer[_bfi] = value[idx];
+			}
 
-                buffer[idx] = input[idx];
-            }
+			return new string(buffer);
+		}
 
-            return new string(buffer);
-        }
-
-        #endregion
     }
 }
