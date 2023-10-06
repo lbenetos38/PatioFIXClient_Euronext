@@ -232,8 +232,6 @@ namespace PatioFIX.Common
         #endregion
 
 
-        public String OrderApplicationCode { get; internal set; }
-
 
 
         /// <summary>
@@ -310,8 +308,19 @@ namespace PatioFIX.Common
 
 
 
-            this.TargetConnection = "ETS";
-
+            if (this.VenueID == "XIPO")
+			{
+				/* 
+				 * Electroning Book Building HBIP
+				 */
+				this.TargetConnection = "ORA";
+                this.ChangedSpecialInstructions = _FormatAlphaField(this.ChangedSpecialInstructions, 120);
+            }
+            else
+            {
+                this.TargetConnection = "ETS";
+                this.ChangedSpecialInstructions = string.Empty;
+            }
 
 
 
@@ -326,64 +335,46 @@ namespace PatioFIX.Common
                 this.SecurityID = this.SecurityCode;
             }
 
-
-            var _orderComment = this.ChangedOrderNote;
-            if (_orderComment != null)
+			//OrderStatusNote
+			if (this.OrderStatusNote == null)
+			{
+				this.OrderStatusNote = "XX";/* Return an empty ACC_Description */
+			}
+			//OrderComment (το συμπιεζουμε λιγο...)
+			var _originalComment = this.ChangedOrderNote;
+            if (_originalComment != null)
             {
-                if (_orderComment.StartsWith(@"GALATIA\"))
-                    this.ChangedOrderNote = _orderComment.Replace(@"GALATIA\", @"GL\");
-                else if (_orderComment.StartsWith(@"EXTRANET\"))
-                    this.ChangedOrderNote = _orderComment.Replace(@"EXTRANET\", @"EXT\");
+                if (_originalComment.StartsWith(@"GALATIA\"))
+                    this.ChangedOrderNote = _originalComment.Replace(@"GALATIA\", @"GL\");
+                else if (_originalComment.StartsWith(@"EXTRANET\"))
+                    this.ChangedOrderNote = _originalComment.Replace(@"EXTRANET\", @"EXT\");
             }
 
 
-            if (this.OrderStatusNote != null && this.OrderStatusNote.StartsWith("XX"))
-            {
-                if (this.OrderStatusNote.Length > 5)
-                    this.OrderStatusNote = this.OrderStatusNote.Substring(0, 5);/* Return the XX + ACC_Description*/
-            }
+			/*
+             * Τωρα θα φτιαξουμε το ChangedOrderNote/tag58 για την αλλαγη μας
+             * Προσοχη, ακομα εχουμε το limit των 25 χαρακτηρων (εξαιτιας του ODL)!
+             */
+			var _orderNote = _FormatAlphaField(this.OrderStatusNote, 5);
+			if (this.VenueID == "XIPO")
+			{
+				_orderNote = _orderNote + _FormatAlphaField(this.ChangedOrderNote, 20);
+			}
             else
             {
-                this.OrderStatusNote = "XX   ";/* Return an empty ACC_Description */
-            }
-
-
-            this.OrderApplicationCode = "~1~";
-            if (_orderComment == @"GALATIA\SALESTRADER")
-            {
-                if (this.PEL_PROF == "ΡΩΩΩ")
-                    this.OrderApplicationCode = "~1~";/*0001*/
+			    if (_originalComment == @"GALATIA\SALESTRADER")
+                {
+				    _orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" ? "~1~" : "~6~", 3);
+                    _orderNote = _orderNote + _FormatAlphaField(this.ChangedOrderNote, 17);
+                }
                 else
-                    this.OrderApplicationCode = "~6~";/*0006*/
+                {
+                    _orderNote = _orderNote + _FormatAlphaField(this.ChangedOrderNote, 20);
+                }
             }
-
-            if (this.VenueID == "XIPO")
-            {
-                this.TargetConnection = "ORA";          /* ORA=XNET Target system */
-            }
-
-            var strOrderNote = _FormatAlphaField(this.OrderStatusNote, 5);
-            // This add an extra field in case that the entry user is SALESTRADER
-            if (_orderComment == @"GALATIA\SALESTRADER")
-            {
-                strOrderNote = strOrderNote + _FormatAlphaField(this.OrderApplicationCode, 3);
-                strOrderNote = strOrderNote + _FormatAlphaField(this.ChangedOrderNote, 17);
-            }
-            else
-            {
-                strOrderNote = strOrderNote + _FormatAlphaField(this.ChangedOrderNote, 20);
-            }
-            this.ChangedOrderNote = strOrderNote;
+            this.ChangedOrderNote = _orderNote;
 
 
-            if (this.TargetConnection == "ORA")
-            {
-                this.ChangedSpecialInstructions = _FormatAlphaField(this.ChangedSpecialInstructions, 120);
-            }
-            else
-            {
-                this.ChangedSpecialInstructions = string.Empty;
-            }
         }
 
 

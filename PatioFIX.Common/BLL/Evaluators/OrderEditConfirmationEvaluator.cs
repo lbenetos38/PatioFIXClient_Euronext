@@ -35,7 +35,6 @@ namespace PatioFIX.Common.BLL.Evaluators
             if (fixInMessage.ODLMessageType != ODLMessageTypeEnum.Order_Edit_Confirmation) throw new PtBusinessException($"InvalidMessageType. Need Order_Edit_Confirmation but received {fixInMessage.ODLMessageType}");
             #endregion
 
-            //TC00 A EB       000000XATHM                18880075        500000      EUROB          8   0000003820201111        000000000001000000000X  PC00000000066000000000000000XX1  ~6~GL\SALESTRADER         20201111141101875000
             try
             {
                 //Κανουμε cast το comObject στον σωστο συγκεκριμένο τύπο

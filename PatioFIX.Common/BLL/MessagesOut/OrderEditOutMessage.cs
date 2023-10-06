@@ -184,8 +184,7 @@ namespace PatioFIX.Common
 
 
             this.TargetConnection = "ETS";
-
-            this.TraderID = Globals.ETS_SiteTraderId;
+            this.TraderID = Globals.Configuration.PatioOMS.ETS_TraderId;
 
 
             if (this.SecurityIDSource == (char)SECURITYIDSource.USE_EXCHAGE_SYMBOL)

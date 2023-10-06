@@ -205,13 +205,14 @@ namespace PatioFIX.Common
         /// 
         /// </summary>
         public string KemRequesterAseCode { get; private set; }
-        #endregion
+		#endregion
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        String OrderStatusNote { get; set; }
+		/// <summary>
+		/// Εδω εχουμε το PELA_XR.PEL_ACC_Description
+		/// (Εχει την μορφη 'ΧΧ1' ή 'ΧΧ12' ή 'ΧΧ123')
+		/// </summary>
+		String OrderStatusNote { get; set; }
 
         /// <summary>
         /// 
@@ -235,9 +236,6 @@ namespace PatioFIX.Common
         public DateTime WorkingDate { get; }
         #endregion
 
-
-
-        String OrderApplicationCode { get; set; }
 
 
         /// <summary>
@@ -288,7 +286,7 @@ namespace PatioFIX.Common
             if (!reader.IsDBNull(34)) this.TradingCapacity = reader.GetString(34)[0];
             if (!reader.IsDBNull(35)) this.LiquidityProvision = reader.GetString(35)[0];
             if (!reader.IsDBNull(36)) this.SpecialInstructions = reader.GetString(36);
-            if (!reader.IsDBNull(37)) this.OrderStatusNote = reader.GetString(37).Trim().ToUpperInvariant();
+            if (!reader.IsDBNull(37)) this.OrderStatusNote = reader.GetString(37);
             if (!reader.IsDBNull(38)) this.AlgoFlag = reader.GetString(38)[0];
             if (!reader.IsDBNull(39)) this.CommodityHedgingFlag = reader.GetString(39)[0];
             if (!reader.IsDBNull(40)) this.PEL_PROF = reader.GetString(40).Trim();
@@ -298,9 +296,25 @@ namespace PatioFIX.Common
 
 
 
-            this.TargetConnection = "ETS";
-            this.MemberID = Globals.ETS_SiteMemberId;
-            this.TraderID = Globals.ETS_SiteTraderId;
+            if (this.VenueID == "XIPO")
+			{
+                /* 
+				 * Electroning Book Building HBIP
+				 */
+                this.TargetConnection = "ORA";
+				this.MemberID = Globals.Configuration.PatioOMS.ORA_MemberId;
+				this.TraderID = Globals.Configuration.PatioOMS.ORA_TraderId;
+                this.PositionEffect = 'O';
+                this.SettlType = '0';
+                this.SpecialInstructions = _FormatAlphaField(this.SpecialInstructions, 120);
+            }
+            else
+            {
+                this.TargetConnection = "ETS";
+                this.MemberID = Globals.Configuration.PatioOMS.ETS_MemberId;
+                this.TraderID = Globals.Configuration.PatioOMS.ETS_TraderId;
+				this.SpecialInstructions = string.Empty;
+			}
 
 
             if (this.SecurityIDSource == SECURITYIDSource.USE_EXCHAGE_SYMBOL)
@@ -318,90 +332,50 @@ namespace PatioFIX.Common
             {
                 // New Order
                 this.DisclosedVolume = 0;
-            }
+			}
 
-            var _orderComment = this.OrderComment;
-            if (_orderComment != null)
+
+
+
+			//OrderStatusNote
+            if(this.OrderStatusNote == null)
             {
-                if (_orderComment.StartsWith(@"GALATIA\"))
-                    this.OrderComment = _orderComment.Replace(@"GALATIA\", @"GL\");
-                else if (_orderComment.StartsWith(@"EXTRANET\"))
-                    this.OrderComment = _orderComment.Replace(@"EXTRANET\", @"EXT\");
-            }
-
-
-            if (this.OrderStatusNote != null && this.OrderStatusNote.StartsWith("XX"))
+				this.OrderStatusNote = "XX";/* Return an empty ACC_Description */
+			}
+			//OrderComment (το συμπιεζουμε λιγο...)
+            var _originalComment = this.OrderComment;
+			if (_originalComment != null)
             {
-                if (this.OrderStatusNote.Length > 5)
-                    this.OrderStatusNote = this.OrderStatusNote.Substring(0, 5);/* Return the XX + ACC_Description*/
+                if (_originalComment.StartsWith(@"GALATIA\"))
+                    this.OrderComment = _originalComment.Replace(@"GALATIA\", @"GL\");
+                else if (_originalComment.StartsWith(@"EXTRANET\"))
+                    this.OrderComment = _originalComment.Replace(@"EXTRANET\", @"EXT\");
             }
+
+
+			/*
+             * Τωρα θα φτιαξουμε το OrderNote/tag58 για την νεα εντολη μας
+             * Προσοχη, ακομα εχουμε το limit των 25 χαρακτηρων (εξαιτιας του ODL)!
+             */
+			var _orderNote = _FormatAlphaField(this.OrderStatusNote, 5);
+			if (this.VenueID == "XIPO")
+            {
+				_orderNote = _orderNote + _FormatAlphaField(this.OrderComment, 20);
+			}
             else
             {
-                this.OrderStatusNote = "XX   ";/* Return an empty ACC_Description */
-            }
-
-
-
-
-            this.OrderApplicationCode = "~1~";
-            if (_orderComment == @"GALATIA\SALESTRADER")
-            {
-                if (this.PEL_PROF == "ΡΩΩΩ")
-                    this.OrderApplicationCode = "~1~";/*0001*/
-                else
-                    this.OrderApplicationCode = "~6~";/*0006*/
-            }
-
-            if (this.VenueID == "XCYS") /* This Case is used for CYPRUS/HBIP Orders for ClearingMemberID*/
-                this.ClearingMemberID = "EB00";         /* Cyprus Stock Exchange (CSE) */
-            else if (this.VenueID == "XECM")
-                this.ClearingMemberID = "EB00";         /* Emerging Companies Market (CSE) */
-
-
-            if (this.VenueID == "XIPO")
-            {
-                this.ClearingMemberID = "EB00";         /* Electroning Book Building HBIP*/
-                this.PositionEffect = 'O';              /* Electroning Book Building HBIP*/
-                this.SettlType = '0';                   /* Electroning Book Building HBIP*/
-                this.TargetConnection = "ORA";          /* ORA=XNET Target system */
-                this.MemberID = "AT";                   /* ORA=XNET Target system */
-
-                this.OrderApplicationCode = string.Empty;
-                if (_orderComment == @"GALATIA\SALESTRADER")
+				if (_originalComment == @"GALATIA\SALESTRADER")
                 {
-                    if (this.PEL_PROF == "ΡΩΩΩ")
-                        this.OrderApplicationCode = string.Empty;/*0001*/
-                    else
-                        this.OrderApplicationCode = "~6~";/*0006*/
+					_orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" ? "~1~" : "~6~", 3);
+                    _orderNote = _orderNote + _FormatAlphaField(this.OrderComment, 17);
+                }
+                else
+                {
+                    _orderNote = _orderNote + _FormatAlphaField(this.OrderComment, 20);
                 }
             }
-
-
-
-
-
-            var strOrderNote = _FormatAlphaField(this.OrderStatusNote, 5);
-            // This add an extra field in case that the entry user is SALESTRADER
-            if (_orderComment == @"GALATIA\SALESTRADER")
-            {
-                strOrderNote = strOrderNote + _FormatAlphaField(this.OrderApplicationCode, 3);
-                strOrderNote = strOrderNote + _FormatAlphaField(this.OrderComment, 17);
-            }
-            else
-            {
-                strOrderNote = strOrderNote + _FormatAlphaField(this.OrderComment, 20);
-            }
-            this.OrderNote = strOrderNote;//internal use by the member
-
-
-            if (this.TargetConnection == "ORA")
-            {
-                this.SpecialInstructions = _FormatAlphaField(this.SpecialInstructions, 120);
-            }
-            else
-            {
-                this.SpecialInstructions = string.Empty;
-            }
+            this.OrderNote = _orderNote;
+        
         }
 
 

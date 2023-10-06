@@ -74,13 +74,6 @@ namespace PatioFIX.Common
         /// </summary>
         public static string ServiceName { get; set; }
 
-        public static string ETS_SiteMemberId = "EB";
-        public static string ETS_SiteTraderId = "EB00C";
-        public static string ETS_SiteClearingMemberId = "EB11";
-        public static string ORA_SiteMemberId = "AT";
-        public static string ORA_SiteTraderId = "EB00C";
-        public static string ORA_SiteClearingMemberId = "EB00";
-
 
         public static void DumpSettings(Logger theLogger)
         {

@@ -42,23 +42,32 @@ namespace PatioFIX.Common.BLL.Evaluators
                 var confirmOrder = (OrderEntryConfirmationMessage)odlMessage;
 
 
-                string strOrderNotes = confirmOrder.OrderNote;
-                if (string.IsNullOrWhiteSpace(strOrderNotes) == false && strOrderNotes.Length > 14)
-                {
-                    if (strOrderNotes[0] == 'X' && strOrderNotes[1] == 'X')    // if Acc_Descriptn has passed ('XX1  ~6~GL\SALESTRADER   ')
-                    {
-                        strOrderNotes = strOrderNotes.Substring(5);
-                        if (strOrderNotes[0] == '~' && strOrderNotes[2] == '~')
-                        {
-                            strOrderNotes = strOrderNotes.Substring(3);
-                        }
-                        strOrderNotes = strOrderNotes.Replace("GL\\", "GALATIA\\");
-                        strOrderNotes = strOrderNotes.Replace("EXT\\", "EXTRANET\\");
-                    }
-                }
+                string _οrderNote = confirmOrder.OrderNote;
+				if (_οrderNote.Length >= 8)
+				{
+					/*
+                     * Αφαιρουμε τα ACC_Description, το  ~6~/~1~ που βαλαμε στο OrderEntryOutMessage
+                     */
+					if (_οrderNote[0] == 'X' && _οrderNote[1] == 'X')
+					{
+						if (_οrderNote[5] == '~' && _οrderNote[7] == '~')
+						{
+							_οrderNote = _οrderNote.Substring(8);
+						}
+						else
+						{
+							_οrderNote = _οrderNote.Substring(5);
+						}
+					}
+				    /*
+                     * Αποσυμπιεζουμε τα 'GL\' και 'EXT\'
+                     */
+				    _οrderNote = _οrderNote.Replace("GL\\", "GALATIA\\");
+                    _οrderNote = _οrderNote.Replace("EXT\\", "EXTRANET\\");
+				}
 
 
-                if (fixInMessage.Source == ODLMesssageSource.Broker)
+				if (fixInMessage.Source == ODLMesssageSource.Broker)
                 {
                     //Βγαζουμε απο το UnConfirmedPool το pending message
                     UnConfirmedPool.Instance.Remove(confirmOrder.ClOrdID, fixInMessage.ODLMessageType);
@@ -70,7 +79,7 @@ namespace PatioFIX.Common.BLL.Evaluators
                     /*
                      * Εισαγει και το ConfirmOrder και κανει update και το αντιστοιχο Order (εαν υπαρχει)
                      */
-                    OdlDal.InsertConfirmOrder(fixInMessage, confirmOrder, strOrderNotes);
+                    OdlDal.InsertConfirmOrder(fixInMessage, confirmOrder, _οrderNote);
                 }
 
 

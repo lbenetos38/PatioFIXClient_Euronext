@@ -31,6 +31,12 @@ namespace PatioFIX.Common.Configuration
 		public bool ConvertUTCTimeToLocal { get; } = true;
 
 
+		public string ETS_MemberId { get; }
+		public string ETS_TraderId { get; }
+		public string ORA_MemberId { get; }
+		public string ORA_TraderId { get; }
+
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -90,6 +96,36 @@ namespace PatioFIX.Common.Configuration
 					this.ConvertUTCTimeToLocal = Convert.ToBoolean(value);
 				}
 
+
+				value = section["ETS_MemberId"];
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentNullException($"Invalid value for {section.Path}:ETS_MemberId");
+				}
+				this.ETS_MemberId = value;
+
+				value = section["ETS_TraderId"];
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentNullException($"Invalid value for {section.Path}:ETS_TraderId");
+				}
+				this.ETS_TraderId = value;
+
+
+				value = section["ORA_MemberId"];
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentNullException($"Invalid value for {section.Path}:ORA_MemberId");
+				}
+				this.ORA_MemberId = value;
+
+
+				value = section["ORA_TraderId"];
+				if (string.IsNullOrWhiteSpace(value))
+				{
+					throw new ArgumentNullException($"Invalid value for {section.Path}:ORA_TraderId");
+				}
+				this.ORA_TraderId = value;
 			}
             else
             {
@@ -119,6 +155,10 @@ namespace PatioFIX.Common.Configuration
                 theLogger.Info($"PatioOMS::TargetConnection = {this.TargetConnection}");
 				theLogger.Info($"PatioOMS::ConvertUTCTimeToLocal = {this.ConvertUTCTimeToLocal}");
 			}
-        }
+			theLogger.Info($"PatioOMS::ETS_MemberId = {this.ETS_MemberId}");
+			theLogger.Info($"PatioOMS::ETS_TraderId = {this.ETS_TraderId}");
+			theLogger.Info($"PatioOMS::ORA_MemberId = {this.ORA_MemberId}");
+			theLogger.Info($"PatioOMS::ORA_TraderId = {this.ORA_TraderId}");
+		}
     }
 }
