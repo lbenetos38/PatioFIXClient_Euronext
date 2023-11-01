@@ -19,8 +19,8 @@
 		<AssemblyTitle>PatioFIX.Common</AssemblyTitle>
 		<Copyright>Copyright © 2012-2022 Eurobank Equities Α.Ε.Π.Ε.Υ</Copyright>
 		<InformationalVersion>1.0</InformationalVersion>
-	  <AssemblyVersion>2023.10.06.1</AssemblyVersion>
-	  <FileVersion>2023.10.06.1</FileVersion>
+	  <AssemblyVersion>2023.10.30.3</AssemblyVersion>
+	  <FileVersion>2023.10.30.3</FileVersion>
 	</PropertyGroup>
 
 

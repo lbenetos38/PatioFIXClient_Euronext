@@ -97,7 +97,7 @@ namespace PatioFIX.Common
                 if (execType == '0')
                 {
                     /*
-                     * '0' 	New
+                     * '0' New (receipt of NewOrderSingle (D) message)
                      * Εχουμε επιβεβαιωση οτι μια εντολη μπηκε πετυχημενα στην αογορα (market)
                      * Μπορει να είναι market, limit, Stop, Stop Limit, On Close....
                      */
@@ -270,7 +270,13 @@ namespace PatioFIX.Common
             {
                 /*
                  * '9' 	Order Cancel Reject (9)
-                 * The Order Cancel Reject (9) message is issued by the broker upon receipt of a Cancel Request (F) or Order Cancel/Replace Request (G) message which cannot be honored. 
+                 * 
+                 * The OrderCancelReject (9) message is issued by the broker(ΑΤΗΕΧ) upon 
+                 * 
+                 *  1) upon rejection of OrderCancelRequest (F).
+                 *  
+                 *  2) upon rejection of an order suspension/resumption through OrderCancelReplaceRequest(G).
+                 *      (The OrderCancelReplaceRequest (G) message is used in two situations: Modify orders, Suspend/Resume orders)
                  */
                 return ODLMessageTypeEnum.OrderCancelReject;
             }
@@ -329,17 +335,19 @@ namespace PatioFIX.Common
                         char headLine = fixMessage[Tags.Headline].AsChar;
 
                         if (headLine == 'A')
-                            return ODLMessageTypeEnum.Ignored_Message;//QUOTE ALARM (5.3.4)
+                            return ODLMessageTypeEnum.Ignored_Message;//QUOTE ALARM (5.3.7)
                         if (headLine == 'W')
-                            return ODLMessageTypeEnum.Ignored_Message;//QUOTE WARNING (5.3.4)
+                            return ODLMessageTypeEnum.Ignored_Message;//QUOTE WARNING (5.3.7)
                         if (headLine == 'S')
-                            return ODLMessageTypeEnum.Ignored_Message;//SUSPEND QUOTATION RESPONSIBILITY (5.3.5)
+                            return ODLMessageTypeEnum.Ignored_Message;//Suspend/Resume Market Maker’s Responsibility (5.3.8)
                         if (headLine == 'R')
-                            return ODLMessageTypeEnum.Ignored_Message;//RESUME QUOTATION RESPONSIBILITY (5.3.5)
+                            return ODLMessageTypeEnum.Ignored_Message;//(Suspend/Resume Market Maker’s Responsibility (5.3.8)
                         if (headLine == 'C')
                             return ODLMessageTypeEnum.Credit_Limit_Information; //(5.5.4)
                         if (headLine == 'M')
                             return ODLMessageTypeEnum.Exchange_Notes;           //(5.5.5)
+                        if (headLine == 'H')
+                            return ODLMessageTypeEnum.Ignored_Message;//Hit & Take order information (5.5.6)
                     }
                 }
                 else if (msgType.Length == 2)

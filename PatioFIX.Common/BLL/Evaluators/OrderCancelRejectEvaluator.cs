@@ -50,8 +50,9 @@ namespace PatioFIX.Common.BLL.Evaluators
                 PtChange originalChange = null;
                 PtCancel originalCancel = null;
                 /*
-                 * Εχουμε ενα OrderCancelReject το οποιο το λαμβανουμε στην περιπτωση rejection ενος
-                 * OrderCancelRequest(F) (ακυρωσης) ή Order Cancel/Replace Request(G) (αλλαγης)
+                 * Εχουμε ενα OrderCancelReject το οποιο το λαμβανουμε στην περιπτωση 
+                 *  1) rejection ενος OrderCancelRequest(F) (ακυρωσης) ή 
+                 *  2) rejection of an order suspension/resumption through OrderCancelReplaceRequest(G) (αλλαγης)
                  */
                 if (Int32.TryParse(reject.ClOrdID, out int _clOrdId))
                 {

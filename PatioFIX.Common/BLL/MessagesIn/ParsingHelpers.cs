@@ -44,7 +44,9 @@ namespace PatioFIX.Common.BLL.Messages
         }
 
         /// <summary>
-        /// 
+        /// Applicable only on OrdStatus of Partial or Filled and 
+        /// if BoardID(5506) = ‘M’ (Main board).
+        /// (5.1.4)
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logger"></param>
@@ -52,23 +54,30 @@ namespace PatioFIX.Common.BLL.Messages
         /// <exception cref="PtFixException"></exception>
         public static char GetLastLiquidityInd(FIXMessage message, Logger logger)
         {
-            var _LastLiquidityInd = message[Tags.LastLiquidityInd].AsInt;
-            if (_LastLiquidityInd == /*Added Liquidity*/1)
+            if (message.Contains(Tags.LastLiquidityInd))
             {
-                return 'A';
-            }
-            else if (_LastLiquidityInd == /*Removed Liquidity*/2)
-            {
-                return 'R';
-            }
-            else if (_LastLiquidityInd == /*Auction*/4)
-            {
-                return 'N';
+                var _LastLiquidityInd = message[Tags.LastLiquidityInd].AsInt;
+                if (_LastLiquidityInd == /*Added Liquidity*/1)
+                {
+                    return 'A';
+                }
+                else if (_LastLiquidityInd == /*Removed Liquidity*/2)
+                {
+                    return 'R';
+                }
+                else if (_LastLiquidityInd == /*Auction*/4)
+                {
+                    return 'N';
+                }
+                else
+                {
+                    MetricsProxy.Instance.OnParsingError();
+                    throw new PtFixException($"tag851 (LastLiquidityInd) has UNSUPPORTED_VALUE of '{_LastLiquidityInd}'");
+                }
             }
             else
             {
-                MetricsProxy.Instance.OnParsingError();
-                throw new PtFixException($"tag851 (LastLiquidityInd) has UNSUPPORTED_VALUE of '{_LastLiquidityInd}'");
+                return ' ';
             }
         }
 
