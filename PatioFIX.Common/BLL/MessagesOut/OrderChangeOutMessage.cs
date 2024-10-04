@@ -229,6 +229,11 @@ namespace PatioFIX.Common
         /// Instructions for order handling on exchange trading floor.
         /// </summary>
         public ExecInstEnum ExecInst { get; } = ExecInstEnum.Default;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ClientSalesTraderNoDiscount { get; }
         #endregion
 
 
@@ -300,6 +305,8 @@ namespace PatioFIX.Common
                 //ειδαλλως μενει με την Default τιμη
             }
 
+            if (!reader.IsDBNull(45)) this.ClientSalesTraderNoDiscount = reader.GetInt32(45);
+            
             if (Int32.TryParse(this.ClientOrderID, out Int32 result))
             {
                 this.OrderID = result;
@@ -364,7 +371,7 @@ namespace PatioFIX.Common
             {
 			    if (_originalComment == @"GALATIA\SALESTRADER")
                 {
-				    _orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" ? "~1~" : "~6~", 3);
+                    _orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" || this.ClientSalesTraderNoDiscount == 1 ? "~1~" : "~6~", 3);
                     _orderNote = _orderNote + _FormatAlphaField(this.ChangedOrderNote, 17);
                 }
                 else

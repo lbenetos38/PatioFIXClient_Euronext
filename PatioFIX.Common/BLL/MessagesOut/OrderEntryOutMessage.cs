@@ -234,6 +234,11 @@ namespace PatioFIX.Common
         /// 
         /// </summary>
         public DateTime WorkingDate { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ClientSalesTraderNoDiscount { get; }
         #endregion
 
 
@@ -292,6 +297,7 @@ namespace PatioFIX.Common
             if (!reader.IsDBNull(40)) this.PEL_PROF = reader.GetString(40).Trim();
             this.WorkingDate = reader.GetDateTime(41);
             if (!reader.IsDBNull(42)) this.KemRequesterAseCode = reader.GetString(42).Trim();
+            if (!reader.IsDBNull(43)) this.ClientSalesTraderNoDiscount = reader.GetInt32(43);
             #endregion
 
 
@@ -366,7 +372,7 @@ namespace PatioFIX.Common
             {
 				if (_originalComment == @"GALATIA\SALESTRADER")
                 {
-					_orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" ? "~1~" : "~6~", 3);
+                    _orderNote = _orderNote + _FormatAlphaField(this.PEL_PROF == "ΡΩΩΩ" || this.ClientSalesTraderNoDiscount == 1 ? "~1~" : "~6~", 3);
                     _orderNote = _orderNote + _FormatAlphaField(this.OrderComment, 17);
                 }
                 else
