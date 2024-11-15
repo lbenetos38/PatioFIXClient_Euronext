@@ -205,6 +205,7 @@ namespace PatioFIX.Common.BLL.Messages
         public string ContraTraderID { get; private set; }
         public string TradeNumber { get; private set; }
         public double CurrentCreditValue => m_executionReportMessage.CurrentCreditValue;
+        public double CreditLimitValue => m_executionReportMessage.CreditLimitValue;
         public string ListID { get; private set; }
         public char TradeSource { get; private set; }
         public char PhaseID => m_executionReportMessage.TradingSessionID;

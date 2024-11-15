@@ -176,6 +176,7 @@ namespace PatioFIX.Common.BLL.Messages
         /// </summary>
         public char EditType { get; private set; }
         public double CurrentCreditValue => m_executionReportMessage.CurrentCreditValue;
+        public double CreditLimitValue => m_executionReportMessage.CreditLimitValue;
         public string OrderNote => m_executionReportMessage.Text;
         public string ListID { get; private set; }
         public string Timestamp { get; private set; }

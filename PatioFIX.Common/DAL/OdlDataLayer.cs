@@ -64,6 +64,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@cfcAveragePrice", confirmation.AveragePrice, SqlDbType.Decimal);
             AddParameter(command, "@cfcEditType", confirmation.EditType, SqlDbType.Char);
             AddParameter(command, "@cfcCurrentCreditValue", confirmation.CurrentCreditValue, SqlDbType.Decimal);
+            AddParameter(command, "@cfcCreditLimitValue", confirmation.CreditLimitValue, SqlDbType.Decimal);
             AddParameter(command, "@origClOrdID", _RemoveSpecialCharacters(confirmation.OrigClOrdID), SqlDbType.VarChar);
             AddParameter(command, "@cfcSecurityID", confirmation.SecurityID, SqlDbType.NVarChar);
             AddParameter(command, "@cfcSecurityIDSource", confirmation.SecurityIDSource, SqlDbType.Char);
@@ -124,6 +125,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@p25", confirmation.LeavesQuantity, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p26", confirmation.AveragePrice, ParameterDirection.Input, 18, 6);
             AddDecimalParameter(command, "@p27", confirmation.CurrentCreditValue, ParameterDirection.Input, 18, 2);
+            AddDecimalParameter(command, "@pCreditLimitValue", confirmation.CreditLimitValue, ParameterDirection.Input, 18, 2);
             AddParameter(command, "@cfhSecurityID", confirmation.SecurityID, SqlDbType.NVarChar);
             AddParameter(command, "@p29", confirmation.SecurityIDSource, SqlDbType.Char);//cfhSecurityIDSource
             AddParameter(command, "@cfhCurrency", confirmation.Currency, SqlDbType.Char);
@@ -199,6 +201,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@LeavesQuantity", confirmOrder.LeavesQuantity, SqlDbType.Decimal);
             AddParameter(command, "@AveragePrice", confirmOrder.AveragePrice, SqlDbType.Decimal);
             AddParameter(command, "@p31", confirmOrder.CurrentCreditValue, SqlDbType.Decimal);
+            AddParameter(command, "@pCreditLimitValue", confirmOrder.CreditLimitValue, SqlDbType.Decimal);
             AddParameter(command, "@ListId", confirmOrder.ListID, SqlDbType.Char);
             AddParameter(command, "@GOIFlag", confirmOrder.GOIFlag, SqlDbType.Char);
             AddParameter(command, "@ShortSellFlag", confirmOrder.ShortSellFlag, SqlDbType.Char);
@@ -263,6 +266,7 @@ namespace PatioFIX.Common.DAL
             AddParameter(command, "@cfcAveragePrice", confirmation.AveragePrice, SqlDbType.Decimal);
             AddParameter(command, "@cfcEditType", confirmation.EditType, SqlDbType.Char);
             AddParameter(command, "@cfcCurrentCreditValue", confirmation.CurrentCreditValue, SqlDbType.Decimal);
+            AddParameter(command, "@cfcCreditLimitValue", confirmation.CreditLimitValue, SqlDbType.Decimal);
             AddParameter(command, "@origClOrdID", _RemoveSpecialCharacters(confirmation.OrigClOrdID), SqlDbType.VarChar);
             AddParameter(command, "@cfcSecurityID", confirmation.SecurityID, SqlDbType.NVarChar);
             AddParameter(command, "@cfcSecurityIDSource", confirmation.SecurityIDSource, SqlDbType.Char);
@@ -568,6 +572,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@p26", newTradeConfirmation.LeavesQuantity, ParameterDirection.Input, 18, 0);
             AddDecimalParameter(command, "@p27", newTradeConfirmation.AveragePrice, ParameterDirection.Input, 18, 6);
             AddDecimalParameter(command, "@p28", newTradeConfirmation.CurrentCreditValue, ParameterDirection.Input, 18, 2);
+            AddDecimalParameter(command, "@pCreditLimitValue", newTradeConfirmation.CreditLimitValue, ParameterDirection.Input, 18, 2);
             AddParameter(command, "@p29", newTradeConfirmation.ListID, SqlDbType.Char, ParameterDirection.Input, 6);
             AddParameter(command, "@OrderRelFlag", newTradeConfirmation.OrderRelFlag, SqlDbType.Char, ParameterDirection.Input, 1);
 
@@ -650,6 +655,7 @@ namespace PatioFIX.Common.DAL
             AddDecimalParameter(command, "@LastPx", tradeCaptureReport.LastPx, ParameterDirection.Input, 18, 6);//Price
 
             AddDecimalParameter(command, "@CurrentCreditValue", tradeCaptureReport.CurrentCreditValue, ParameterDirection.Input, 18, 2);//CurrentCreditValue
+            AddDecimalParameter(command, "@CreditLimitValue", tradeCaptureReport.CreditLimitValue, ParameterDirection.Input, 18, 2); //Credit Limit Value
             AddParameter(command, "@ATHEXTradeType", _trim(tradeCaptureReport.ATHEXTradeType), SqlDbType.Char, ParameterDirection.Input, 2);//TradeType
             AddParameter(command, "@DEA", tradeCaptureReport.DirectElectronicAccess, SqlDbType.Char, ParameterDirection.Input, 1);//DirectElectronicAccess
 

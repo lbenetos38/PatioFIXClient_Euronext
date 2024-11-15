@@ -234,7 +234,10 @@ namespace PatioFIX.Common.BLL.Messages
             this.BoardID = 'M';
             this.Timestamp = string.Empty;
             this.ATHEXTradeType = default;
+
             this.CurrentCreditValue = default;
+            this.CreditLimitValue = default;
+            
             this.PreviouslyReported = default;
             this.DirectElectronicAccess = default;
         }
@@ -327,7 +330,10 @@ namespace PatioFIX.Common.BLL.Messages
 
             if (message.Contains(CustomTags.BoardID)) this.BoardID = message[CustomTags.BoardID].AsChar;
             this.ATHEXTradeType = message[CustomTags.ATHEXTradeType].AsString;
+
             if (message.Contains(CustomTags.CurrentCreditValue)) this.CurrentCreditValue = message[CustomTags.CurrentCreditValue].AsFloat;
+            if (message.Contains(CustomTags.CreditLimitValue)) this.CreditLimitValue = message[CustomTags.CreditLimitValue].AsFloat;
+            
             this.PreviouslyReported = message[Tags.PreviouslyReported].AsChar;
 
             if (message.Contains(Tags.TransactTime))
@@ -474,6 +480,11 @@ namespace PatioFIX.Common.BLL.Messages
         /// 5545
         /// </summary>
         internal double CurrentCreditValue;
+
+        /// <summary>
+        /// 5546
+        /// </summary>
+        internal double CreditLimitValue;
 
         /// <summary>
         /// PreviouslyReported (Tag = 570, Type: Boolean)

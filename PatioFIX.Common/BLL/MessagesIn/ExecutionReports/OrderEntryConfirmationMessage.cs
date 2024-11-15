@@ -190,6 +190,7 @@ namespace PatioFIX.Common.BLL.Messages
         /// </summary>
         public char FixOrderStatus => m_executionReportMessage.OrdStatus;
         public double CurrentCreditValue => m_executionReportMessage.CurrentCreditValue;
+        public double CreditLimitValue => m_executionReportMessage.CreditLimitValue;
         public string ListID { get; private set; }
         public char DirectElectronicAccess { get; private set; }
 

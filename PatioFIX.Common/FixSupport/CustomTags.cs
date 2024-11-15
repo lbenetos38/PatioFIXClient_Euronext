@@ -42,7 +42,10 @@
         public const int StopSymbolType = 5527;
         public const int ΑΤΗΕΧTradeType = 5529;
         public const int RejectReasonCode = 5532;
+        
         public const int CurrentCreditValue = 5545;
+        public const int CreditLimitValue = 5546;
+       
         public const int MBListID = 5561;
         public const int CancelReasonCode = 5508;
 		/// <summary>
@@ -59,10 +62,5 @@
         public const int TrdRegPublicationReason = 2670;
 
         public const int PartyRoleQualifier = 2376;
-
-
-
-
-
     }
 }

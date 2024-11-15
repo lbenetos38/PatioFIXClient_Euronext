@@ -72,7 +72,10 @@ namespace PatioFIX.Common.BLL.Messages
             this.StopSymbolType = default;
             this.ΑΤΗΕΧTradeType = default;
             this.RejectReasonCode = default;
+            
             this.CurrentCreditValue = default;
+            this.CreditLimitValue = default;
+
             this.MBListID = default;
             this.CancelReasonCode = default;
             this.OrderOrigination = default;
@@ -161,7 +164,10 @@ namespace PatioFIX.Common.BLL.Messages
             if (message.Contains(CustomTags.StopSymbolType)) this.StopSymbolType = message[CustomTags.StopSymbolType].AsString;
             if (message.Contains(CustomTags.ΑΤΗΕΧTradeType)) this.ΑΤΗΕΧTradeType = message[CustomTags.ΑΤΗΕΧTradeType].AsString;
             if (message.Contains(CustomTags.RejectReasonCode)) this.RejectReasonCode = message[CustomTags.RejectReasonCode].AsString;
+
             if (message.Contains(CustomTags.CurrentCreditValue)) this.CurrentCreditValue = message[CustomTags.CurrentCreditValue].AsFloat;
+            if (message.Contains(CustomTags.CreditLimitValue)) this.CreditLimitValue = message[CustomTags.CreditLimitValue].AsFloat;
+            
             if (message.Contains(CustomTags.MBListID)) this.MBListID = message[CustomTags.MBListID].AsString;
             if (message.Contains(CustomTags.CancelReasonCode)) this.CancelReasonCode = message[CustomTags.CancelReasonCode].AsChar;
             if (message.Contains(CustomTags.OrderOrigination)) this.OrderOrigination = message[CustomTags.OrderOrigination].AsChar;
@@ -515,6 +521,10 @@ namespace PatioFIX.Common.BLL.Messages
         /// 5545
         /// </summary>
         internal double CurrentCreditValue;
+        /// <summary>
+        /// 5546
+        /// </summary>
+        internal double CreditLimitValue;
         /// <summary>
         /// 5561
         /// </summary>
