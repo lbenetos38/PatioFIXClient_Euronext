@@ -1,0 +1,49 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5.3.7 - News (Market Market Alarm) -- Ignored
+
+This form of News (B) message is sent to market markets in case they neglect their quotation responsibilities.
+	* 35 = B
+	* 148 = W (Quote Warning) / A (Quote Alarm)
+
+Example Message -- W - Quote Warning -- Ignored 
+	* 8=FIX.4.49=21635=B49=ATHEX56=EB_Sender634=8446352=20250919-11:00:52.77448842=20250919-11:00:51.258826148=W146=148=BOCHG25L22=8207=XADE33=158=Prices are missing198=84407453=2448=EB447=D452=1448=EB00C447=D452=3610=028 
+
+Example Message -- A - Quote Alarm -- Ignored
+	* 8=FIX.4.49=22135=B49=ATHEX56=EB_Sender634=982752=20250919-08:16:05.19462542=20250919-08:16:03.325526148=A146=148=MXGRR25I22=8207=XADE33=158=Prices are missing5562=1198=9771453=2448=EB447=D452=1448=EB00C447=D452=3610=017 
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5.3.8 - News (Suspend/Resume Market Maker's Responsibility) -- Ignored
+
+This form of News (B) message is sent to market makers to inform them of any change in their quotation responsibilities, namely when their quotation responsibility is suspended or resumed
+	* 35 = B
+	* 148 = S (Suspend) / R (Resume)
+
+Example Message -- S - Suspend quotation responsibilty
+	* 8=FIX.4.49=21635=B49=ATHEX56=EB_Sender634=8446352=20250919-11:00:52.77448842=20250919-11:00:51.258826148=S146=148=BOCHG25L22=8207=XADE33=158=Prices are missing198=84407453=2448=EB447=D452=1448=EB00C447=D452=3610=024
+
+Example Message -- R - Resume quotation responsibilty
+	* 8=FIX.4.49=21635=B49=ATHEX56=EB_Sender634=8446352=20250919-11:00:52.77448842=20250919-11:00:51.258826148=R146=148=BOCHG25L22=8207=XADE33=158=Prices are missing198=84407453=2448=EB447=D452=1448=EB00C447=D452=3610=023
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5.4.2  - Trade Capture Report ACT (TCRA) -- Ignored
+
+The TradeCaptureReportAct (AR) is sent to the client upon receipt of TradeCaptureReport (AE) message 
+	* 35 = AR
+
+Example Message
+	* 8=FIX.4.49=33135=AR49=ATHEX56=EB_Sender634=673152=20250729-08:49:49.342393571=                880=000068572=                856=0150=0453=2448=EB447=D452=1448=EB00C447=D452=36573=148=GREBM102522=8207=HEDE32=131=0.0177=O198=6575528=A60=20250729-08:49:49.3407235506=B5529=RE5545=5.365546=5.361724=0939=05604=GR -@10=004 
+	
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5.5.5 News (Message Notes)
+
+This message is sent to client whenever the exchange want to send a note.
+
+Example Message
+	* 8=FIX.4.49=21835=B49=ATHEX56=EB_Sender634=222543=Y97=Y52=20250917-07:22:04.759692122=20250917-07:01:53.249157148=M33=158=Throttling parameters198=22255577=25601=05602=20453=2448=EB447=D452=1448=APAB1447=D452=3610=237 
