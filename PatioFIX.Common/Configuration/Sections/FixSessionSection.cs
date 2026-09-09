@@ -75,7 +75,7 @@ namespace PatioFIX.Common.Configuration
                 {
                     throw new ArgumentNullException($"Invalid value for Version");
                 }
-                if (value != "FIX.4.2" && value != "FIX.4.3" && value != "FIX.4.4")
+                if (value != "FIX.4.2" && value != "FIX.4.3" && value != "FIX.4.4" && value != "FIX.5.0")
                 {
                     throw new ArgumentException($"Unsupported version {value}");
                 }
