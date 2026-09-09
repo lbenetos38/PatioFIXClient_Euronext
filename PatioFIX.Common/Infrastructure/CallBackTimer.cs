@@ -6,7 +6,7 @@ namespace PatioFIX.Common
     /// <summary>
     /// 
     /// </summary>
-    public class MyCallbackTimer
+    public class CallBackTimer
     {
         readonly Logger theLogger;
         readonly System.Threading.Timer m_heartBeatTimer;
@@ -24,7 +24,7 @@ namespace PatioFIX.Common
         /// <param name="heartBeatInterval"></param>
         /// <param name="callback"></param>
         /// <param name="timerName"></param>
-        public MyCallbackTimer(Int32 heartBeatInterval, TimerCallback callback, string timerName)
+        public CallBackTimer(Int32 heartBeatInterval, TimerCallback callback, string timerName)
         {
             m_heartBeatInterval = heartBeatInterval;
             this.theLogger = new Logger(timerName);
